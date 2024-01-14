@@ -5,6 +5,7 @@
 package frc.robot;
 
 import frc.robot.Constants.ControllerConstants;
+import frc.robot.commands.Autos;
 import frc.robot.commands.drivebase.TeleopDrive;
 import frc.robot.subsystems.SwerveSubsystem;
 
@@ -57,19 +58,19 @@ public class RobotContainer {
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     TeleopDrive simClosedFieldRel = new TeleopDrive(drivebase,
-        () -> MathUtil.applyDeadband(driverController.getX(),
-            ControllerConstants.X_DEADBAND),
-        () -> MathUtil.applyDeadband(driverController.getY(),
+        () -> MathUtil.applyDeadband(-driverController.getY(),
             ControllerConstants.Y_DEADBAND),
+        () -> MathUtil.applyDeadband(-driverController.getX(),
+            ControllerConstants.X_DEADBAND),
         () -> MathUtil.applyDeadband(driverController.getZ(),
             ControllerConstants.Z_DEADBAND),
         () -> true);
 
     TeleopDrive closedFieldRel = new TeleopDrive(drivebase,
-        () -> MathUtil.applyDeadband(driverController.getX(),
-            ControllerConstants.X_DEADBAND),
-        () -> MathUtil.applyDeadband(driverController.getY(),
+        () -> MathUtil.applyDeadband(-driverController.getY(),
             ControllerConstants.Y_DEADBAND),
+        () -> MathUtil.applyDeadband(-driverController.getX(),
+            ControllerConstants.X_DEADBAND),
         () -> MathUtil.applyDeadband(driverController.getZ(),
             ControllerConstants.Z_DEADBAND),
         () -> true);
@@ -109,6 +110,6 @@ public class RobotContainer {
   }
 
   public void setMotorBrake(boolean brake) {
-    drivebase.setMotorBrake(brake);
+    // drivebase.setMotorBrake(brake);
   }
 }

@@ -91,8 +91,8 @@ public class CANCoderSwerve extends SwerveAbsoluteEncoder
 
     if (strength != MagnetHealthValue.Magnet_Green)
     {
-      DriverStation.reportWarning(
-          "CANCoder " + encoder.getDeviceID() + " magnetic field is less than ideal.\n", false);
+      // DriverStation.reportWarning(
+      //     "CANCoder " + encoder.getDeviceID() + " magnetic field is less than ideal.\n", false);
     }
     if (strength == MagnetHealthValue.Magnet_Invalid || strength == MagnetHealthValue.Magnet_Red)
     {

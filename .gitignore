@@ -32,3 +32,5 @@ _ReSharper*/
 packages/
 
 .gradle/*
+build/*
+ctre_sim/*

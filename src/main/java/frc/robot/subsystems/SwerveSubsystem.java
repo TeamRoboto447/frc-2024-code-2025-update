@@ -32,7 +32,7 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
  */
 public class SwerveSubsystem extends SubsystemBase {
     private final SwerveDrive swerveDrive;
-    public double maximumSpeed = Units.feetToMeters(14.5);
+    public double maximumSpeed = Units.feetToMeters(0.5); //14.5
 
     public SwerveSubsystem(File directory) {
         // Angle conversion factor is 360 / (GEAR RATIO * ENCODER RESOLUTION) In this
