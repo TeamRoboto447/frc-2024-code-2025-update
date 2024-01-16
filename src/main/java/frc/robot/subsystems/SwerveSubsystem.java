@@ -47,7 +47,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // be converted to meters to get meters/second. The gear ratio for MK4i swerve
         // module with L2 gears is 6.75 motor revolutions per wheel rotation. The
         // encoder resolution per motor revolution is 1 per motor revolution.
-        double driveConversionFactor = SwerveMath.calculateMetersPerRotation(Units.inchesToMeters(4), 6.75, 2048);
+        double driveConversionFactor = SwerveMath.calculateMetersPerRotation(Units.inchesToMeters(4), 6.75, 1);
         System.out.println("\"conversionFactor\": {");
         System.out.println("\t\"angle\": " + angleConversionFactor + ",");
         System.out.println("\t\"drive\": " + driveConversionFactor);
