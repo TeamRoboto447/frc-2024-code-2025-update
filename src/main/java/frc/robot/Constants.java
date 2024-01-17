@@ -21,4 +21,9 @@ public final class Constants {
     public static final double Y_DEADBAND = 0;
     public static final double Z_DEADBAND = 0;
   }
+
+  public static class ShooterConstants {
+    public static final int leftMotorId = 15;
+    public static final int rightMotorId = 16; 
+  }
 }

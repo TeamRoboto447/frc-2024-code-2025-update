@@ -6,9 +6,12 @@ package frc.robot;
 
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.drivebase.TeleopDrive;
+import frc.robot.commands.shooter.TeleopShoot;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 import java.io.File;
+import java.util.function.DoubleSupplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
@@ -36,10 +39,25 @@ public class RobotContainer {
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
       "swerve"));
 
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+
   CommandJoystick driverController = new CommandJoystick(ControllerConstants.kDriverControllerPort);
   // private final CommandXboxController operatorController = new
   // CommandXboxController(
   // ControllerConstants.kOperatorControllerPort);
+
+  private final DoubleSupplier speedSupplier = new DoubleSupplier() {
+    @Override
+    public double getAsDouble() {
+      double speed = (-driverController.getRawAxis(3)) / 2;
+      if(Math.abs(speed) < 0.15) {
+        speed = 0;
+      }
+      return speed;
+    }
+  };
+
+  private final TeleopShoot shooterCommand = new TeleopShoot(shooterSubsystem, speedSupplier);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -65,6 +83,7 @@ public class RobotContainer {
         () -> true);
 
     drivebase.setDefaultCommand(closedFieldRel);
+    shooterSubsystem.setDefaultCommand(shooterCommand);
   }
 
   /**
