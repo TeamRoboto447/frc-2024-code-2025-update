@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,10 +15,11 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem() {
         this.leftMotor = new CANSparkMax(Constants.ShooterConstants.leftMotorId, MotorType.kBrushless);
         this.leftMotor.setInverted(false);
+        this.leftMotor.setIdleMode(IdleMode.kBrake);
 
         this.rightMotor = new CANSparkMax(Constants.ShooterConstants.rightMotorId, MotorType.kBrushless);
-        this.rightMotor.follow(this.leftMotor);
-        this.rightMotor.setInverted(true);
+        this.rightMotor.follow(this.leftMotor, true);
+        this.rightMotor.setIdleMode(IdleMode.kBrake);
     }
 
     public void spin(double speed) {

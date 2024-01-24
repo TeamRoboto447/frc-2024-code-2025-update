@@ -5,6 +5,7 @@
 package frc.robot;
 
 import frc.robot.Constants.ControllerConstants;
+import frc.robot.commands.Autos;
 import frc.robot.commands.drivebase.TeleopDrive;
 import frc.robot.commands.shooter.TeleopShoot;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.util.function.DoubleSupplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -49,10 +51,14 @@ public class RobotContainer {
   private final DoubleSupplier speedSupplier = new DoubleSupplier() {
     @Override
     public double getAsDouble() {
-      double speed = (-driverController.getRawAxis(3)) / 2;
+      // double speed = (-driverController.getRawAxis(3)) / 2; // Half speed max
+      double speed = (-driverController.getRawAxis(3)); // Full speed max
+
       if(Math.abs(speed) < 0.15) {
         speed = 0;
       }
+
+      if(!driverController.button(11).getAsBoolean()) speed = 0;
       return speed;
     }
   };
@@ -63,11 +69,16 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    // Configure Named Commands
+    NamedCommands.registerCommand("Test Command", Autos.testNamedCommand());
+
+
+
     // Configure the trigger bindings
     configureBindings();
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser = AutoBuilder.buildAutoChooser("Test Auto");
     // Another option that allows you to specify the default auto by its name
     // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
 

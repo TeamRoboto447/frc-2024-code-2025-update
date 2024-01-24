@@ -11,7 +11,7 @@ public class TeleopShoot extends Command {
     public TeleopShoot (ShooterSubsystem subsystem, DoubleSupplier speedSupplier) {
         this.sSubsystem = subsystem;
         this.tSpeedSupplier = speedSupplier;
-        addRequirements(subsystem);
+        addRequirements(subsystem); 
     }
 
     @Override

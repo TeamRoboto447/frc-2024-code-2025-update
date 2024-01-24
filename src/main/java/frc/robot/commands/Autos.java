@@ -5,18 +5,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.subsystems.ExampleSubsystem;
 
 public final class Autos {
-  /** Example static factory for an autonomous command. */
-  public static Command exampleAuto(ExampleSubsystem exampleSubsystem) {
-    return Commands.sequence(
-        exampleSubsystem.exampleMethodCommand(),
-        new InstantCommand(() -> {
-          System.out.println("Replace examples please!!!");
-        }));
+  public static Command testNamedCommand() {
+    return new InstantCommand(() -> {
+      System.out.println("Test Succeeded!");
+    });
   }
 
   private Autos() {
