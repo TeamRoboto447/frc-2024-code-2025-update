@@ -32,27 +32,9 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
  */
 public class SwerveSubsystem extends SubsystemBase {
     private final SwerveDrive swerveDrive;
-    public double maximumSpeed = Units.feetToMeters(55); //14.5
+    public double maximumSpeed = Units.feetToMeters(14.5);
 
     public SwerveSubsystem(File directory) {
-        // Angle conversion factor is 360 / (GEAR RATIO * ENCODER RESOLUTION) In this
-        // case the stearing gear ratio is 21.42857142857143 motor revolutions per wheel
-        // rotation for the MK4i swerve module. The encoder resolution per motor
-        // revolution is 1 per motor revolution.
-        double angleConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(21.42857142857143, 1);
-
-        // Motor conversion factor is (PI * WHEEL DIAMETER IN METERS) / (GEAR RATIO *
-        // ENCODER RESOLUTION).
-        // In this case the wheel diameter is 4 inches, which must
-        // be converted to meters to get meters/second. The gear ratio for MK4i swerve
-        // module with L2 gears is 6.75 motor revolutions per wheel rotation. The
-        // encoder resolution per motor revolution is 1 per motor revolution.
-        double driveConversionFactor = SwerveMath.calculateMetersPerRotation(Units.inchesToMeters(4), 6.75, 1);
-        System.out.println("\"conversionFactor\": {");
-        System.out.println("\t\"angle\": " + angleConversionFactor + ",");
-        System.out.println("\t\"drive\": " + driveConversionFactor);
-        System.out.println("}");
-
         // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary
         // objects being created.
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
@@ -343,5 +325,9 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public Rotation2d getPitch() {
         return swerveDrive.getPitch();
+    }
+
+    public SwerveDrive getSwerveDrive() {
+        return this.swerveDrive;
     }
 }

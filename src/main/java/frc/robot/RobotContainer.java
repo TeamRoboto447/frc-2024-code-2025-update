@@ -10,6 +10,7 @@ import frc.robot.commands.drivebase.TeleopDrive;
 import frc.robot.commands.shooter.TeleopShoot;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import swervelib.SwerveDriveTest;
 
 import java.io.File;
 import java.util.function.DoubleSupplier;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -42,11 +44,11 @@ public class RobotContainer {
       "swerve"));
 
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  private static SysIdRoutine sysIdRoutine;
 
   CommandJoystick driverController = new CommandJoystick(ControllerConstants.kDriverControllerPort);
-  // private final CommandXboxController operatorController = new
-  // CommandXboxController(
-  // ControllerConstants.kOperatorControllerPort);
+  private final CommandXboxController operatorController = new CommandXboxController(
+      ControllerConstants.kOperatorControllerPort);
 
   private final DoubleSupplier speedSupplier = new DoubleSupplier() {
     @Override
@@ -54,11 +56,12 @@ public class RobotContainer {
       // double speed = (-driverController.getRawAxis(3)) / 2; // Half speed max
       double speed = (-driverController.getRawAxis(3)); // Full speed max
 
-      if(Math.abs(speed) < 0.15) {
+      if (Math.abs(speed) < 0.15) {
         speed = 0;
       }
 
-      if(!driverController.button(11).getAsBoolean()) speed = 0;
+      if (!driverController.button(11).getAsBoolean())
+        speed = 0;
       return speed;
     }
   };
@@ -71,8 +74,6 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure Named Commands
     NamedCommands.registerCommand("Test Command", Autos.testNamedCommand());
-
-
 
     // Configure the trigger bindings
     configureBindings();
