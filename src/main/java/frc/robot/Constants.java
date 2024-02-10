@@ -47,6 +47,17 @@ public final class Constants {
         public static final int rightMotorId = 16;
     }
 
+    public static class IntakeConstants {
+        public static final int leftMotorId = -1;
+        public static final int frontMotorId = -1;
+        public static final int rightMotorId = -1;
+        
+        public static final int loaderMotorId = -1;
+
+        public static final int lifter0Channel = 0;
+        public static final int lifter1Channel = 1;
+    }
+
     public static class VisionConstants {
         public static boolean USE_VISION = true;
         /** Minimum target ambiguity. Targets with higher ambiguity will be discarded */

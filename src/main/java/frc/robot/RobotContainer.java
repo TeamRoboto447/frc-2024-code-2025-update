@@ -58,7 +58,7 @@ public class RobotContainer {
         @Override
         public double getAsDouble() {
             // double speed = (-driverController.getRawAxis(3)) / 2; // Half speed max
-            double speed = (-driverController.getRawAxis(3)); // Full speed max
+            double speed = -((driverController.getRawAxis(3) + 1) / 2); // Full speed max
 
             if (Math.abs(speed) < 0.15) {
                 speed = 0;
