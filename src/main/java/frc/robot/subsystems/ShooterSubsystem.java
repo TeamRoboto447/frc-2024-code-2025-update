@@ -18,12 +18,14 @@ public class ShooterSubsystem extends SubsystemBase {
         this.leftMotor.setIdleMode(IdleMode.kBrake);
 
         this.rightMotor = new CANSparkMax(Constants.ShooterConstants.rightMotorId, MotorType.kBrushless);
-        this.rightMotor.follow(this.leftMotor, true);
+        this.rightMotor.setInverted(true);
+        // this.rightMotor.follow(this.leftMotor, true);
         this.rightMotor.setIdleMode(IdleMode.kBrake);
     }
 
     public void spin(double speed) {
         this.leftMotor.set(speed);
+        this.rightMotor.set(speed);
         SmartDashboard.putNumber("Shooter Speed", speed);
     }
 

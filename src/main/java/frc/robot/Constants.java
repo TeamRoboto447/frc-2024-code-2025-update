@@ -68,6 +68,9 @@ public final class Constants {
         public static final Transform3d ROBOT_TO_RIGHT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
                 new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
+        public static final Transform3d ROBOT_TO_BACK_CAM = new Transform3d(
+                new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
+                new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
 
         /**
          * Standard deviations of model states. Increase these numbers to trust your

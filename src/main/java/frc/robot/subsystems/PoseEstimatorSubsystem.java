@@ -27,19 +27,20 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
     // private final SwerveDrivePoseEstimator poseEstimator;
     private final SwerveSubsystem swerveSubsystem;
-    // private final PhotonRunnable leftEstimator = new PhotonRunnable(new
-    // PhotonCamera("leftCam"),
-    // VisionConstants.ROBOT_TO_LEFT_CAM);
-    private final PhotonRunnable frontEstimator = new PhotonRunnable(new PhotonCamera("frontCam"),
+    private final PhotonRunnable leftEstimator = new PhotonRunnable(new PhotonCamera("LeftCam"),
+            VisionConstants.ROBOT_TO_LEFT_CAM);
+    private final PhotonRunnable frontEstimator = new PhotonRunnable(new PhotonCamera("FrontCam"),
             VisionConstants.ROBOT_TO_FRONT_CAM);
-    // private final PhotonRunnable rightEstimator = new PhotonRunnable(new
-    // PhotonCamera("rightCam"),
-    // VisionConstants.ROBOT_TO_RIGHT_CAM);
+    private final PhotonRunnable rightEstimator = new PhotonRunnable(new PhotonCamera("RightCam"),
+            VisionConstants.ROBOT_TO_RIGHT_CAM);
+    private final PhotonRunnable backEstimator = new PhotonRunnable(new PhotonCamera("BrontCam"),
+            VisionConstants.ROBOT_TO_BACK_CAM);
 
     private final Notifier allNotifier = new Notifier(() -> {
-        // leftEstimator.run();
         frontEstimator.run();
-        // rightEstimator.run();
+        leftEstimator.run();
+        backEstimator.run();
+        rightEstimator.run();
     });
 
     private OriginPosition originPosition = OriginPosition.kBlueAllianceWallRightSide;
@@ -58,6 +59,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     public void periodic() {
         if (VisionConstants.USE_VISION) {
             estimatorChecker(frontEstimator);
+            estimatorChecker(leftEstimator);
+            estimatorChecker(backEstimator);
+            estimatorChecker(rightEstimator);
         } else {
             allNotifier.close();
         }

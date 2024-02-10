@@ -8,6 +8,8 @@ import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.drivebase.TeleopDrive;
 import frc.robot.commands.shooter.TeleopShoot;
+import frc.robot.commands.testing.ServoTestingCommand;
+import frc.robot.subsystems.ServoTestingSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -46,6 +48,7 @@ public class RobotContainer {
             () -> drivebase.getSwerveDrive().getYaw(), () -> drivebase.getSwerveDrive().getModulePositions(),
             drivebase);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+    private final ServoTestingSubsystem testingSubsystem = new ServoTestingSubsystem();
 
     CommandJoystick driverController = new CommandJoystick(ControllerConstants.kDriverControllerPort);
     private final CommandXboxController operatorController = new CommandXboxController(
@@ -61,13 +64,20 @@ public class RobotContainer {
                 speed = 0;
             }
 
-            if (!driverController.button(11).getAsBoolean())
+            if (!operatorController.a().getAsBoolean() && !operatorController.b().getAsBoolean())
                 speed = 0;
+
+            if (operatorController.b().getAsBoolean())
+                speed = -speed;
             return speed;
         }
     };
 
     private final TeleopShoot shooterCommand = new TeleopShoot(shooterSubsystem, speedSupplier);
+    private final ServoTestingCommand testCommand = new ServoTestingCommand(testingSubsystem, () -> {
+        double position = (driverController.getRawAxis(3) + 1)/2;
+        return position;
+    });
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -97,6 +107,7 @@ public class RobotContainer {
 
         drivebase.setDefaultCommand(closedFieldRel);
         shooterSubsystem.setDefaultCommand(shooterCommand);
+        testingSubsystem.setDefaultCommand(testCommand);
     }
 
     /**
@@ -113,9 +124,7 @@ public class RobotContainer {
      * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
      * joysticks}.
      */
-    private void configureBindings() {
-
-    }
+    private void configureBindings() {}
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
