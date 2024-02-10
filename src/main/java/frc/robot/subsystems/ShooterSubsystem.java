@@ -24,7 +24,9 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void spin(double speed) {
-        this.leftMotor.set(speed);
+        int sign = speed >= 0 ? -1 : 1;
+        double leftSpeed = Math.min(speed, 0.01) * sign;
+        this.leftMotor.set(leftSpeed);
         this.rightMotor.set(speed);
         SmartDashboard.putNumber("Shooter Speed", speed);
     }
