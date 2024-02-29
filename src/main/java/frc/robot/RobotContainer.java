@@ -89,10 +89,7 @@ public class RobotContainer {
         // Configure the trigger bindings
         configureBindings();
 
-        // Build an auto chooser. This will use Commands.none() as the default option.
         autoChooser = AutoBuilder.buildAutoChooser("Test Auto");
-        // Another option that allows you to specify the default auto by its name
-        // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -140,7 +137,7 @@ public class RobotContainer {
     }
 
     public void setMotorBrake(boolean brake) {
-        // drivebase.setMotorBrake(brake);
+        drivebase.setMotorBrake(brake);
     }
 
     public void onAllianceChanged(Alliance currentAlliance) {

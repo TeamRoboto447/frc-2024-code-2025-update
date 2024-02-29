@@ -43,19 +43,25 @@ public final class Constants {
     }
 
     public static class ShooterConstants {
-        public static final int leftMotorId = 15;
-        public static final int rightMotorId = 16;
+        public static final int leftMotorId = 31;
+        public static final int rightMotorId = 32;
+        public static final int aimMotorId = 33;
+    }
+
+    public static class ClimberConstants {
+        public static final int climbMotorId = 20;
     }
 
     public static class IntakeConstants {
-        public static final int leftMotorId = -1;
-        public static final int frontMotorId = -1;
-        public static final int rightMotorId = -1;
+        public static final int leftMotorId = 21;
+        public static final int frontMotorId = 22;
+        public static final int rightMotorId = 23;
         
-        public static final int loaderMotorId = -1;
-
-        public static final int lifter0Channel = 0;
-        public static final int lifter1Channel = 1;
+        public static final int loaderMotorId = 30;
+        
+        public static final int lifterOne = 25;
+        public static final int lifterTwo = 26;
+        public static final int lifterThree = 27;
     }
 
     public static class VisionConstants {

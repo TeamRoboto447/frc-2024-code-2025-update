@@ -18,6 +18,5 @@ public class TeleopShoot extends Command {
     public void execute(){
         double speed = this.tSpeedSupplier.getAsDouble();
         this.sSubsystem.spin(speed);
-
     }
 }

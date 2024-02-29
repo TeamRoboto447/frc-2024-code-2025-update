@@ -11,6 +11,7 @@ import frc.robot.Constants;
 public class ShooterSubsystem extends SubsystemBase {
     private final CANSparkMax leftMotor;
     private final CANSparkMax rightMotor;
+    private final CANSparkMax aimMotor;
 
     public ShooterSubsystem() {
         this.leftMotor = new CANSparkMax(Constants.ShooterConstants.leftMotorId, MotorType.kBrushless);
@@ -21,6 +22,12 @@ public class ShooterSubsystem extends SubsystemBase {
         this.rightMotor.setInverted(true);
         // this.rightMotor.follow(this.leftMotor, true);
         this.rightMotor.setIdleMode(IdleMode.kBrake);
+
+        this.aimMotor = new CANSparkMax(Constants.ShooterConstants.aimMotorId, MotorType.kBrushless);
+    }
+
+    public void manualAim(double speed) {
+        this.aimMotor.set(speed);
     }
 
     public void spin(double speed) {
