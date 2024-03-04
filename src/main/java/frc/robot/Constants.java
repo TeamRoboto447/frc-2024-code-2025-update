@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -53,6 +54,13 @@ public final class Constants {
     }
 
     public static class IntakeConstants {
+        public static final double intakeWheelDiameterMeters = Units.inchesToMeters(2.25);
+        public static final double intakeWheelCircunferenceMeters = intakeWheelDiameterMeters * Math.PI;
+
+        public static final double[] leftControllerVals = new double[]{0, 0, 0};
+        public static final double[] frontControllerVals = new double[]{0, 0, 0};
+        public static final double[] rightControllerVals = new double[]{0, 0, 0};
+
         public static final int leftMotorId = 21;
         public static final int frontMotorId = 22;
         public static final int rightMotorId = 23;
