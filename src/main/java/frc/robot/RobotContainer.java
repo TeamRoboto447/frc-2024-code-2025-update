@@ -50,7 +50,7 @@ public class RobotContainer {
             () -> drivebase.getSwerveDrive().getYaw(), () -> drivebase.getSwerveDrive().getModulePositions(),
             drivebase);
 
-    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(drivebase);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final ServoTestingSubsystem testingSubsystem = new ServoTestingSubsystem();
 
