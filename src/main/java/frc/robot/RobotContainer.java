@@ -7,9 +7,11 @@ package frc.robot;
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.drivebase.TeleopDrive;
+import frc.robot.commands.intake.TeleopIndex;
 import frc.robot.commands.shooter.TeleopShoot;
 import frc.robot.commands.testing.ServoTestingCommand;
 import frc.robot.subsystems.ServoTestingSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -47,6 +49,8 @@ public class RobotContainer {
     private final PoseEstimatorSubsystem poseSubsystem = new PoseEstimatorSubsystem(
             () -> drivebase.getSwerveDrive().getYaw(), () -> drivebase.getSwerveDrive().getModulePositions(),
             drivebase);
+
+    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final ServoTestingSubsystem testingSubsystem = new ServoTestingSubsystem();
 
@@ -73,7 +77,8 @@ public class RobotContainer {
         }
     };
 
-    private final TeleopShoot shooterCommand = new TeleopShoot(shooterSubsystem, speedSupplier);
+    private final TeleopIndex indexerCommand = new TeleopIndex(intakeSubsystem, () -> (-operatorController.getLeftY())/4, () -> operatorController.getRightTriggerAxis());
+    private final TeleopShoot shooterCommand = new TeleopShoot(shooterSubsystem, speedSupplier, () -> (-operatorController.getRightY()));
     private final ServoTestingCommand testCommand = new ServoTestingCommand(testingSubsystem, () -> {
         double position = (driverController.getRawAxis(3) + 1)/2;
         return position;
@@ -104,6 +109,7 @@ public class RobotContainer {
 
         drivebase.setDefaultCommand(closedFieldRel);
         shooterSubsystem.setDefaultCommand(shooterCommand);
+        intakeSubsystem.setDefaultCommand(indexerCommand);
         testingSubsystem.setDefaultCommand(testCommand);
     }
 

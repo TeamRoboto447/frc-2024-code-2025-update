@@ -29,8 +29,11 @@ public class IntakeSubsystem extends SubsystemBase {
         this.loader = new CANSparkMax(IntakeConstants.loaderMotorId, MotorType.kBrushless);
 
         this.lifterOne = new CANSparkMax(IntakeConstants.lifterOne, MotorType.kBrushless);
+        this.lifterOne.setInverted(false);
         this.lifterTwo = new CANSparkMax(IntakeConstants.lifterTwo, MotorType.kBrushless);
+        this.lifterTwo.setInverted(false);
         this.lifterThree = new CANSparkMax(IntakeConstants.lifterThree, MotorType.kBrushless);
+        this.lifterThree.setInverted(false);
 
         this.lifterOneLimits = new EncoderBasedLimits(-1, 1);
         this.lifterTwoLimits = new EncoderBasedLimits(-1, 1);
@@ -55,10 +58,16 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void liftManual(double speed) {
         if (Math.abs(speed) > 0.05) {
+            speed /= 2;
             this.liftManualControl = true;
             this.lifterOne.set(speed);
+            this.lifterTwo.set(speed);
+            this.lifterThree.set(speed);
         } else {
             this.liftManualControl = false;
+            this.lifterOne.set(0);
+            this.lifterTwo.set(0);
+            this.lifterThree.set(0);
         }
     }
 
@@ -76,7 +85,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        runLifter();
+        // runLifter();
         runIntake();
     }
 

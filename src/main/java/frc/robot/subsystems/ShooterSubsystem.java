@@ -15,12 +15,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public ShooterSubsystem() {
         this.leftMotor = new CANSparkMax(Constants.ShooterConstants.leftMotorId, MotorType.kBrushless);
-        this.leftMotor.setInverted(false);
+        this.leftMotor.setInverted(true);
         this.leftMotor.setIdleMode(IdleMode.kBrake);
 
         this.rightMotor = new CANSparkMax(Constants.ShooterConstants.rightMotorId, MotorType.kBrushless);
-        this.rightMotor.setInverted(true);
-        // this.rightMotor.follow(this.leftMotor, true);
+        this.rightMotor.setInverted(false);
         this.rightMotor.setIdleMode(IdleMode.kBrake);
 
         this.aimMotor = new CANSparkMax(Constants.ShooterConstants.aimMotorId, MotorType.kBrushless);
@@ -30,12 +29,13 @@ public class ShooterSubsystem extends SubsystemBase {
         this.aimMotor.set(speed);
     }
 
-    public void spin(double speed) {
-        int sign = speed >= 0 ? -1 : 1;
-        double leftSpeed = Math.min(speed, 0.01) * sign;
-        this.leftMotor.set(leftSpeed);
-        this.rightMotor.set(speed);
-        SmartDashboard.putNumber("Shooter Speed", speed);
+    public void spin(double mainSpeed) {
+        int sign = mainSpeed >= 0 ? -1 : 1;
+        double rightSpeed = Math.min(mainSpeed, 0.05) * sign;
+        this.leftMotor.set(mainSpeed);
+        this.rightMotor.set(rightSpeed);
+        SmartDashboard.putNumber("Right Shooter Speed", rightSpeed);
+        SmartDashboard.putNumber("Left Shooter Speed", mainSpeed);
     }
 
 }
