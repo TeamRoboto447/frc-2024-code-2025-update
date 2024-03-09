@@ -18,7 +18,7 @@
     "id": 12,
     "canbus": null
   },
-  "absoluteEncoderOffset": 355.9572,
+  "absoluteEncoderOffset": 208.300781,
   "inverted": {
     "drive": true,
     "angle": true

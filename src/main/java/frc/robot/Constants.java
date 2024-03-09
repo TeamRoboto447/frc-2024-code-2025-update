@@ -6,7 +6,6 @@ package frc.robot;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -14,6 +13,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import swervelib.math.Matter;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -28,6 +28,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+    public static final double ROBOT_MASS = ((100 /* robot */) + (12.89 + 15 /* battery & bumper */)) / 2.2; // lb /2.2 = kg
+    public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(6)), ROBOT_MASS);
+    public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
 
     public static final class DrivetrainConstants {
 
@@ -47,6 +51,9 @@ public final class Constants {
         public static final int leftMotorId = 31;
         public static final int rightMotorId = 32;
         public static final int aimMotorId = 33;
+
+        public static final int aimPotentiometer = 0;
+        public static final double[] aimControllerVals = new double[]{0.7, 0.002, 0.07}; // P, I, D
     }
 
     public static class ClimberConstants {
@@ -57,9 +64,9 @@ public final class Constants {
         public static final double intakeWheelDiameterMeters = Units.inchesToMeters(2.25);
         public static final double intakeWheelCircunferenceMeters = intakeWheelDiameterMeters * Math.PI;
 
-        public static final double[] leftControllerVals = new double[]{0, 0, 0};
-        public static final double[] frontControllerVals = new double[]{0, 0, 0};
-        public static final double[] rightControllerVals = new double[]{0, 0, 0};
+        public static final double[] leftControllerVals = new double[]{0, 0, 0}; // P, I, D
+        public static final double[] frontControllerVals = new double[]{0, 0, 0}; // P, I, D
+        public static final double[] rightControllerVals = new double[]{0, 0, 0}; // P, I, D
 
         public static final int leftMotorId = 21;
         public static final int frontMotorId = 22;
@@ -85,17 +92,21 @@ public final class Constants {
         // TODO: Actually get measurements, these are currently set as if the camera is
         // in the direct center facing forward with no angle.
         public static final Transform3d ROBOT_TO_LEFT_CAM = new Transform3d(
-                new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
-                new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
+                new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(11.25), Units.inchesToMeters(17.75)),
+                new Rotation3d(Math.toRadians(90), Math.toRadians(10), Math.toRadians(0)));
+                // Translation is Forward, Left, Up positive
+                // Rotation is Yaw, Pitch, Roll (cw positive)
         public static final Transform3d ROBOT_TO_FRONT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
                 new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
+
         public static final Transform3d ROBOT_TO_RIGHT_CAM = new Transform3d(
-                new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
-                new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
+                new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(-11.25), Units.inchesToMeters(17.75)),
+                new Rotation3d(Math.toRadians(-90), Math.toRadians(10), Math.toRadians(0)));
+
         public static final Transform3d ROBOT_TO_BACK_CAM = new Transform3d(
-                new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
-                new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
+                new Translation3d(Units.inchesToMeters(-17.5), Units.inchesToMeters(-8.75), Units.inchesToMeters(9.75)),
+                new Rotation3d(Math.toRadians(180), Math.toRadians(10), Math.toRadians(0)));
 
         /**
          * Standard deviations of model states. Increase these numbers to trust your

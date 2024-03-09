@@ -7,7 +7,6 @@ import org.photonvision.PhotonCamera;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -16,28 +15,27 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
 
 public class PoseEstimatorSubsystem extends SubsystemBase {
-    private final Supplier<Rotation2d> rotationSupplier;
-    private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
+    // private final Supplier<Rotation2d> rotationSupplier;
+    // private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
     // private final SwerveDrivePoseEstimator poseEstimator;
     private final SwerveSubsystem swerveSubsystem;
     private final PhotonRunnable leftEstimator = new PhotonRunnable(new PhotonCamera("LeftCam"),
             VisionConstants.ROBOT_TO_LEFT_CAM);
-    private final PhotonRunnable frontEstimator = new PhotonRunnable(new PhotonCamera("FrontCam"),
-            VisionConstants.ROBOT_TO_FRONT_CAM);
+    // private final PhotonRunnable frontEstimator = new PhotonRunnable(new PhotonCamera("FisheyeCam"), // May not use this for positioning
+    //         VisionConstants.ROBOT_TO_FRONT_CAM);
     private final PhotonRunnable rightEstimator = new PhotonRunnable(new PhotonCamera("RightCam"),
             VisionConstants.ROBOT_TO_RIGHT_CAM);
-    private final PhotonRunnable backEstimator = new PhotonRunnable(new PhotonCamera("BrontCam"),
+    private final PhotonRunnable backEstimator = new PhotonRunnable(new PhotonCamera("BackCam"),
             VisionConstants.ROBOT_TO_BACK_CAM);
 
     private final Notifier allNotifier = new Notifier(() -> {
-        frontEstimator.run();
+        // frontEstimator.run();
         leftEstimator.run();
         backEstimator.run();
         rightEstimator.run();
@@ -47,8 +45,8 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
     public PoseEstimatorSubsystem(Supplier<Rotation2d> rotationSupplier,
             Supplier<SwerveModulePosition[]> modulePositionSupplier, SwerveSubsystem swerveSubsystem) {
-        this.rotationSupplier = rotationSupplier;
-        this.modulePositionSupplier = modulePositionSupplier;
+        // this.rotationSupplier = rotationSupplier;
+        // this.modulePositionSupplier = modulePositionSupplier;
         this.swerveSubsystem = swerveSubsystem;
 
         allNotifier.setName("runAllVision");
@@ -58,24 +56,22 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         if (VisionConstants.USE_VISION) {
-            estimatorChecker(frontEstimator);
+            // estimatorChecker(frontEstimator);
             estimatorChecker(leftEstimator);
             estimatorChecker(backEstimator);
             estimatorChecker(rightEstimator);
         } else {
             allNotifier.close();
         }
-
-        SmartDashboard.putString("Position", getFomattedPose());
     }
 
-    private String getFomattedPose() {
-        var pose = getCurrentPose();
-        return String.format("(%.3f, %.3f) %.2f degrees",
-                pose.getX(),
-                pose.getY(),
-                pose.getRotation().getDegrees());
-    }
+    // private String getFomattedPose() {
+    //     var pose = getCurrentPose();
+    //     return String.format("(%.3f, %.3f) %.2f degrees",
+    //             pose.getX(),
+    //             pose.getY(),
+    //             pose.getRotation().getDegrees());
+    // }
 
     /**
      * Sets the alliance. This is used to configure the origin of the AprilTag map

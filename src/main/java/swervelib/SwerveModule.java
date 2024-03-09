@@ -245,8 +245,8 @@ public class SwerveModule
 
     if (SwerveDriveTelemetry.verbosity == TelemetryVerbosity.HIGH)
     {
-      SmartDashboard.putNumber("Module[" + configuration.name + "] Speed Setpoint", desiredState.speedMetersPerSecond);
-      SmartDashboard.putNumber("Module[" + configuration.name + "] Angle Setpoint", desiredState.angle.getDegrees());
+    //   SmartDashboard.putNumber("Module[" + configuration.name + "] Speed Setpoint", desiredState.speedMetersPerSecond);
+    //   SmartDashboard.putNumber("Module[" + configuration.name + "] Angle Setpoint", desiredState.angle.getDegrees());
     }
   }
 
@@ -489,13 +489,13 @@ public class SwerveModule
   {
     if (absoluteEncoder != null)
     {
-      SmartDashboard.putNumber("Module[" + configuration.name + "] Raw Absolute Encoder",
-                               absoluteEncoder.getAbsolutePosition());
+    //   SmartDashboard.putNumber("Module[" + configuration.name + "] Raw Absolute Encoder",
+    //                            absoluteEncoder.getAbsolutePosition());
     }
-    SmartDashboard.putNumber("Module[" + configuration.name + "] Raw Angle Encoder", angleMotor.getPosition());
-    SmartDashboard.putNumber("Module[" + configuration.name + "] Raw Drive Encoder", driveMotor.getPosition());
-    SmartDashboard.putNumber("Module[" + configuration.name + "] Adjusted Absolute Encoder", getAbsolutePosition());
-    SmartDashboard.putNumber("Module[" + configuration.name + "] Absolute Encoder Read Issue",
-                             getAbsoluteEncoderReadIssue() ? 1 : 0);
+    // SmartDashboard.putNumber("Module[" + configuration.name + "] Raw Angle Encoder", angleMotor.getPosition());
+    // SmartDashboard.putNumber("Module[" + configuration.name + "] Raw Drive Encoder", driveMotor.getPosition());
+    // SmartDashboard.putNumber("Module[" + configuration.name + "] Adjusted Absolute Encoder", getAbsolutePosition());
+    // SmartDashboard.putNumber("Module[" + configuration.name + "] Absolute Encoder Read Issue",
+    //                          getAbsoluteEncoderReadIssue() ? 1 : 0);
   }
 }

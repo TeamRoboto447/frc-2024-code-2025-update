@@ -6,11 +6,11 @@ package frc.robot;
 
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.Autos;
+import frc.robot.commands.climber.ClimbTeleop;
 import frc.robot.commands.drivebase.TeleopDrive;
 import frc.robot.commands.intake.TeleopIndex;
 import frc.robot.commands.shooter.TeleopShoot;
-import frc.robot.commands.testing.ServoTestingCommand;
-import frc.robot.subsystems.ServoTestingSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -42,6 +42,10 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+    private final boolean usingJoystick = true; // Set to false if using gamepad
+    private final double maxAllowedSpeedRange = 0.5; // percentage of max speed (inputs are multiplied by this number)
+    private final double turnSpeedPercentage =  0.75; // percentage of max turn speed to allow
+
     private final SendableChooser<Command> autoChooser;
     // The robot's subsystems and commands are defined here...
     private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
@@ -52,37 +56,47 @@ public class RobotContainer {
 
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(drivebase);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
-    private final ServoTestingSubsystem testingSubsystem = new ServoTestingSubsystem();
+    private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
-    CommandJoystick driverController = new CommandJoystick(ControllerConstants.kDriverControllerPort);
+    CommandJoystick driverJoystick = new CommandJoystick(ControllerConstants.kDriverControllerPort);
+    CommandXboxController driverGamepad = new CommandXboxController(ControllerConstants.kDriverControllerPort);
     private final CommandXboxController operatorController = new CommandXboxController(
             ControllerConstants.kOperatorControllerPort);
 
-    private final DoubleSupplier speedSupplier = new DoubleSupplier() {
+    private final TeleopIndex indexerCommand = new TeleopIndex(
+            intakeSubsystem,
+            () -> (-operatorController.getLeftY()) / 4,
+            () -> operatorController.getRightTriggerAxis() - operatorController.getLeftTriggerAxis(),
+            () -> operatorController.x().getAsBoolean() ? 1 : operatorController.y().getAsBoolean() ? -1 : 0 // if x
+                                                                                                             // return
+                                                                                                             // 1, else
+                                                                                                             // if y
+                                                                                                             // return
+                                                                                                             // -1, else
+                                                                                                             // return 0
+    );
+    private final TeleopShoot shooterCommand = new TeleopShoot(this.shooterSubsystem, this.operatorController);
+
+    private final DoubleSupplier climbSpeedSupplierJoystick = new DoubleSupplier() {
         @Override
         public double getAsDouble() {
-            // double speed = (-driverController.getRawAxis(3)) / 2; // Half speed max
-            double speed = -((driverController.getRawAxis(3) + 1) / 2); // Full speed max
-
-            if (Math.abs(speed) < 0.15) {
-                speed = 0;
-            }
-
-            if (!operatorController.a().getAsBoolean() && !operatorController.b().getAsBoolean())
-                speed = 0;
-
-            if (operatorController.b().getAsBoolean())
-                speed = -speed;
-            return speed;
+            boolean up = driverJoystick.button(6).getAsBoolean();
+            boolean down = driverJoystick.button(4).getAsBoolean();
+            double speed = 1;
+            return up ? speed : down ? -speed : 0; // if up return speed else if down return -speed else return 0
         }
     };
-
-    private final TeleopIndex indexerCommand = new TeleopIndex(intakeSubsystem, () -> (-operatorController.getLeftY())/4, () -> operatorController.getRightTriggerAxis());
-    private final TeleopShoot shooterCommand = new TeleopShoot(shooterSubsystem, speedSupplier, () -> (-operatorController.getRightY()));
-    private final ServoTestingCommand testCommand = new ServoTestingCommand(testingSubsystem, () -> {
-        double position = (driverController.getRawAxis(3) + 1)/2;
-        return position;
-    });
+    private final DoubleSupplier climbSpeedSupplierGamepad = new DoubleSupplier() {
+        @Override
+        public double getAsDouble() {
+            boolean up = driverGamepad.a().getAsBoolean();
+            boolean down = driverGamepad.b().getAsBoolean();
+            double speed = 1;
+            return up ? speed : down ? -speed : 0; // if up return speed else if down return -speed else return 0
+        }
+    };
+    private final ClimbTeleop climberCommand = new ClimbTeleop(climberSubsystem,
+            usingJoystick ? climbSpeedSupplierJoystick : climbSpeedSupplierGamepad);
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -98,19 +112,43 @@ public class RobotContainer {
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
-        TeleopDrive closedFieldRel = new TeleopDrive(drivebase,
-                () -> MathUtil.applyDeadband(driverController.getY(),
-                        ControllerConstants.Y_DEADBAND),
-                () -> MathUtil.applyDeadband(driverController.getX(),
-                        ControllerConstants.X_DEADBAND),
-                () -> MathUtil.applyDeadband(-driverController.getZ(),
-                        ControllerConstants.Z_DEADBAND),
-                () -> true);
+        TeleopDrive closedFieldRel = null;
+        if (usingJoystick) {
+            closedFieldRel = new TeleopDrive(drivebase,
+                    () -> -MathUtil.applyDeadband(driverJoystick.getY() * maxAllowedSpeedRange,
+                            ControllerConstants.Y_DEADBAND),
+                    () -> -MathUtil.applyDeadband(driverJoystick.getX() * maxAllowedSpeedRange,
+                            ControllerConstants.X_DEADBAND),
+                    () -> -MathUtil.applyDeadband(
+                            (driverJoystick.button(1).getAsBoolean() ? driverJoystick.getZ() * 0.5 : 0),
+                            ControllerConstants.Z_DEADBAND),
+                    () -> true);
+        } else {
+            closedFieldRel = new TeleopDrive(drivebase,
+                    () -> -MathUtil.applyDeadband(driverGamepad.getLeftY() *
+                            maxAllowedSpeedRange,
+                            ControllerConstants.Y_DEADBAND),
+                    () -> -MathUtil.applyDeadband(driverGamepad.getLeftX() *
+                            maxAllowedSpeedRange,
+                            ControllerConstants.X_DEADBAND),
+                    () -> -MathUtil.applyDeadband(driverGamepad.getRightX() * turnSpeedPercentage,
+                            ControllerConstants.Z_DEADBAND),
+                    () -> true);
+        }
+
+        // TeleopDrive closedFieldRel = new TeleopDrive(drivebase,
+        // () -> MathUtil.applyDeadband(0,
+        // ControllerConstants.Y_DEADBAND),
+        // () -> MathUtil.applyDeadband(0,
+        // ControllerConstants.X_DEADBAND),
+        // () -> MathUtil.applyDeadband(0,
+        // ControllerConstants.Z_DEADBAND),
+        // () -> true);
 
         drivebase.setDefaultCommand(closedFieldRel);
         shooterSubsystem.setDefaultCommand(shooterCommand);
         intakeSubsystem.setDefaultCommand(indexerCommand);
-        testingSubsystem.setDefaultCommand(testCommand);
+        climberSubsystem.setDefaultCommand(climberCommand);
     }
 
     /**
@@ -127,7 +165,8 @@ public class RobotContainer {
      * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
      * joysticks}.
      */
-    private void configureBindings() {}
+    private void configureBindings() {
+    }
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
