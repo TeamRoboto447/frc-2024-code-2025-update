@@ -5,25 +5,18 @@ import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
 
 public class PoseEstimatorSubsystem extends SubsystemBase {
-    // private final Supplier<Rotation2d> rotationSupplier;
-    // private final Supplier<SwerveModulePosition[]> modulePositionSupplier;
-    // private final SwerveDrivePoseEstimator poseEstimator;
     private final SwerveSubsystem swerveSubsystem;
     private final PhotonRunnable leftEstimator = new PhotonRunnable(new PhotonCamera("LeftCam"),
             VisionConstants.ROBOT_TO_LEFT_CAM);
@@ -40,8 +33,6 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         backEstimator.run();
         rightEstimator.run();
     });
-
-    private OriginPosition originPosition = OriginPosition.kBlueAllianceWallRightSide;
 
     public PoseEstimatorSubsystem(Supplier<Rotation2d> rotationSupplier,
             Supplier<SwerveModulePosition[]> modulePositionSupplier, SwerveSubsystem swerveSubsystem) {
@@ -62,44 +53,6 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             estimatorChecker(rightEstimator);
         } else {
             allNotifier.close();
-        }
-    }
-
-    // private String getFomattedPose() {
-    //     var pose = getCurrentPose();
-    //     return String.format("(%.3f, %.3f) %.2f degrees",
-    //             pose.getX(),
-    //             pose.getY(),
-    //             pose.getRotation().getDegrees());
-    // }
-
-    /**
-     * Sets the alliance. This is used to configure the origin of the AprilTag map
-     * 
-     * @param alliance alliance
-     */
-    public void setAlliance(Alliance alliance) {
-        boolean allianceChanged = false;
-        switch (alliance) {
-            case Blue:
-                allianceChanged = (originPosition == OriginPosition.kBlueAllianceWallRightSide);
-                originPosition = OriginPosition.kRedAllianceWallRightSide;
-                break;
-            case Red:
-                allianceChanged = (originPosition == OriginPosition.kRedAllianceWallRightSide);
-                originPosition = OriginPosition.kBlueAllianceWallRightSide;
-                break;
-            default:
-                // No valid alliance data. Nothing we can do about it
-        }
-
-        if (allianceChanged) {
-            // The alliance changed, which changes the coordinate system.
-            // Since a tag was seen, and the tags are all relative to the coordinate system,
-            // the estimated pose
-            // needs to be transformed to the new coordinate system.
-            Pose2d newPose = flipAlliance(getCurrentPose());
-            swerveSubsystem.getSwerveDrive().resetOdometry(newPose);
         }
     }
 
@@ -125,21 +78,6 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      */
     public void resetFieldPosition() {
         setCurrentPose(new Pose2d());
-    }
-
-    /**
-     * Transforms a pose to the opposite alliance's coordinate system. (0,0) is
-     * always on the right corner of your
-     * alliance wall
-     * 
-     * @param poseToFlip pose to transform to the other alliance
-     * @return pose relative to the other alliance's coordinate system
-     */
-    private Pose2d flipAlliance(Pose2d poseToFlip) {
-        return poseToFlip; //don't need to flip it
-        // return poseToFlip.relativeTo(new Pose2d(
-        //         new Translation2d(FieldConstants.FIELD_LENGTH_METERS, FieldConstants.FIELD_WIDTH_METERS),
-        //         new Rotation2d(Math.PI)));
     }
 
     private Matrix<N3, N1> confidenceCalculator(EstimatedRobotPose estimation) {
@@ -176,9 +114,6 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         if (cameraPose != null) {
             // New pose from vision
             var pose2d = cameraPose.estimatedPose.toPose2d();
-            if (originPosition == OriginPosition.kRedAllianceWallRightSide) {
-                pose2d = flipAlliance(pose2d);
-            }
             swerveSubsystem.getSwerveDrive().addVisionMeasurement(pose2d, cameraPose.timestampSeconds,
                     confidenceCalculator(cameraPose));
         }

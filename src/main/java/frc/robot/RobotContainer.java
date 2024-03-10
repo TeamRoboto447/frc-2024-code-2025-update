@@ -50,9 +50,9 @@ public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
             "swerve"));
-    private final PoseEstimatorSubsystem poseSubsystem = new PoseEstimatorSubsystem(
-            () -> drivebase.getSwerveDrive().getYaw(), () -> drivebase.getSwerveDrive().getModulePositions(),
-            drivebase);
+    // private final PoseEstimatorSubsystem poseSubsystem = new PoseEstimatorSubsystem(
+    //         () -> drivebase.getSwerveDrive().getYaw(), () -> drivebase.getSwerveDrive().getModulePositions(),
+    //         drivebase);
 
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(drivebase);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
@@ -186,6 +186,6 @@ public class RobotContainer {
     }
 
     public void onAllianceChanged(Alliance currentAlliance) {
-        poseSubsystem.setAlliance(currentAlliance);
+        // poseSubsystem.setAlliance(currentAlliance);
     }
 }

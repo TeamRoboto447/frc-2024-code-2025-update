@@ -89,13 +89,12 @@ public final class Constants {
         public static final double DISTANCE_WEIGHT = 7;
         public static final int TAG_PRESENCE_WEIGHT = 10;
 
-        // TODO: Actually get measurements, these are currently set as if the camera is
-        // in the direct center facing forward with no angle.
         public static final Transform3d ROBOT_TO_LEFT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(11.25), Units.inchesToMeters(17.75)),
                 new Rotation3d(Math.toRadians(90), Math.toRadians(10), Math.toRadians(0)));
                 // Translation is Forward, Left, Up positive
                 // Rotation is Yaw, Pitch, Roll (cw positive)
+        // TODO: Get measutements        
         public static final Transform3d ROBOT_TO_FRONT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
                 new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
