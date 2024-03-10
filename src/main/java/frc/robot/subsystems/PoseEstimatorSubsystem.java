@@ -82,12 +82,12 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         boolean allianceChanged = false;
         switch (alliance) {
             case Blue:
-                allianceChanged = (originPosition == OriginPosition.kRedAllianceWallRightSide);
-                originPosition = OriginPosition.kBlueAllianceWallRightSide;
-                break;
-            case Red:
                 allianceChanged = (originPosition == OriginPosition.kBlueAllianceWallRightSide);
                 originPosition = OriginPosition.kRedAllianceWallRightSide;
+                break;
+            case Red:
+                allianceChanged = (originPosition == OriginPosition.kRedAllianceWallRightSide);
+                originPosition = OriginPosition.kBlueAllianceWallRightSide;
                 break;
             default:
                 // No valid alliance data. Nothing we can do about it
@@ -136,9 +136,10 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
      * @return pose relative to the other alliance's coordinate system
      */
     private Pose2d flipAlliance(Pose2d poseToFlip) {
-        return poseToFlip.relativeTo(new Pose2d(
-                new Translation2d(FieldConstants.FIELD_LENGTH_METERS, FieldConstants.FIELD_WIDTH_METERS),
-                new Rotation2d(Math.PI)));
+        return poseToFlip; //don't need to flip it
+        // return poseToFlip.relativeTo(new Pose2d(
+        //         new Translation2d(FieldConstants.FIELD_LENGTH_METERS, FieldConstants.FIELD_WIDTH_METERS),
+        //         new Rotation2d(Math.PI)));
     }
 
     private Matrix<N3, N1> confidenceCalculator(EstimatedRobotPose estimation) {

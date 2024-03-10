@@ -43,8 +43,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
     private final boolean usingJoystick = true; // Set to false if using gamepad
-    private final double maxAllowedSpeedRange = 0.5; // percentage of max speed (inputs are multiplied by this number)
-    private final double turnSpeedPercentage =  0.75; // percentage of max turn speed to allow
+    private final double maxAllowedSpeedRange = 1; // percentage of max speed (inputs are multiplied by this number)
+    private final double turnSpeedPercentage =  0.8; // percentage of max turn speed to allow
 
     private final SendableChooser<Command> autoChooser;
     // The robot's subsystems and commands are defined here...
@@ -80,8 +80,8 @@ public class RobotContainer {
     private final DoubleSupplier climbSpeedSupplierJoystick = new DoubleSupplier() {
         @Override
         public double getAsDouble() {
-            boolean up = driverJoystick.button(6).getAsBoolean();
-            boolean down = driverJoystick.button(4).getAsBoolean();
+            boolean up = driverJoystick.button(6).getAsBoolean() || operatorController.pov(0).getAsBoolean();
+            boolean down = driverJoystick.button(4).getAsBoolean() || operatorController.pov(180).getAsBoolean();
             double speed = 1;
             return up ? speed : down ? -speed : 0; // if up return speed else if down return -speed else return 0
         }
@@ -89,8 +89,8 @@ public class RobotContainer {
     private final DoubleSupplier climbSpeedSupplierGamepad = new DoubleSupplier() {
         @Override
         public double getAsDouble() {
-            boolean up = driverGamepad.a().getAsBoolean();
-            boolean down = driverGamepad.b().getAsBoolean();
+            boolean up = driverGamepad.a().getAsBoolean() || operatorController.pov(0).getAsBoolean();
+            boolean down = driverGamepad.b().getAsBoolean() || operatorController.pov(180).getAsBoolean();
             double speed = 1;
             return up ? speed : down ? -speed : 0; // if up return speed else if down return -speed else return 0
         }
@@ -115,23 +115,23 @@ public class RobotContainer {
         TeleopDrive closedFieldRel = null;
         if (usingJoystick) {
             closedFieldRel = new TeleopDrive(drivebase,
-                    () -> -MathUtil.applyDeadband(driverJoystick.getY() * maxAllowedSpeedRange,
+                    () -> MathUtil.applyDeadband(driverJoystick.getY() * maxAllowedSpeedRange,
                             ControllerConstants.Y_DEADBAND),
-                    () -> -MathUtil.applyDeadband(driverJoystick.getX() * maxAllowedSpeedRange,
+                    () -> MathUtil.applyDeadband(driverJoystick.getX() * maxAllowedSpeedRange,
                             ControllerConstants.X_DEADBAND),
-                    () -> -MathUtil.applyDeadband(
-                            (driverJoystick.button(1).getAsBoolean() ? driverJoystick.getZ() * 0.5 : 0),
+                    () -> MathUtil.applyDeadband(
+                            (driverJoystick.button(1).getAsBoolean() ? driverJoystick.getZ() * turnSpeedPercentage : 0),
                             ControllerConstants.Z_DEADBAND),
                     () -> true);
         } else {
             closedFieldRel = new TeleopDrive(drivebase,
-                    () -> -MathUtil.applyDeadband(driverGamepad.getLeftY() *
+                    () -> MathUtil.applyDeadband(driverGamepad.getLeftY() *
                             maxAllowedSpeedRange,
                             ControllerConstants.Y_DEADBAND),
-                    () -> -MathUtil.applyDeadband(driverGamepad.getLeftX() *
+                    () -> MathUtil.applyDeadband(driverGamepad.getLeftX() *
                             maxAllowedSpeedRange,
                             ControllerConstants.X_DEADBAND),
-                    () -> -MathUtil.applyDeadband(driverGamepad.getRightX() * turnSpeedPercentage,
+                    () -> MathUtil.applyDeadband(driverGamepad.getRightX() * turnSpeedPercentage,
                             ControllerConstants.Z_DEADBAND),
                     () -> true);
         }

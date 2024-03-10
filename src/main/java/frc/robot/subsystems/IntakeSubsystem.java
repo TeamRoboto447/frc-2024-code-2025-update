@@ -24,16 +24,16 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CANSparkMax loader;
 
     private final CANSparkMax lifterOne;
-    private final SparkLimitSwitch downLimitOne;
-    private final SparkLimitSwitch upLimitOne;
+    // private final SparkLimitSwitch downLimitOne;
+    // private final SparkLimitSwitch upLimitOne;
     private final RelativeEncoder liftEncoderOne;
     private final CANSparkMax lifterTwo;
-    private final SparkLimitSwitch downLimitTwo;
+    // private final SparkLimitSwitch downLimitTwo;
     private final SparkLimitSwitch upLimitTwo;
     private final RelativeEncoder liftEncoderTwo;
     private final CANSparkMax lifterThree;
-    private final SparkLimitSwitch downLimitThree;
-    private final SparkLimitSwitch upLimitThree;
+    // private final SparkLimitSwitch downLimitThree;
+    // private final SparkLimitSwitch upLimitThree;
     private final RelativeEncoder liftEncoderThree;
 
     private boolean shouldbeLifted = false;
@@ -42,6 +42,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private boolean correctingOne = false;
     private boolean correctingTwo = false;
     private boolean correctingThree = false;
+
+    private boolean hasResetSinceSwitch = false;
 
     public IntakeSubsystem(SwerveSubsystem driveSystem) {
         this.driveSystem = driveSystem;
@@ -78,13 +80,13 @@ public class IntakeSubsystem extends SubsystemBase {
         this.lifterThree.setInverted(false);
         this.lifterOne.setIdleMode(IdleMode.kBrake);
 
-        this.upLimitOne = lifterOne.getForwardLimitSwitch(Type.kNormallyOpen);
+        // this.upLimitOne = lifterOne.getForwardLimitSwitch(Type.kNormallyOpen);
         this.upLimitTwo = lifterTwo.getForwardLimitSwitch(Type.kNormallyOpen);
-        this.upLimitThree = lifterThree.getForwardLimitSwitch(Type.kNormallyOpen);
+        // this.upLimitThree = lifterThree.getForwardLimitSwitch(Type.kNormallyOpen);
 
-        this.downLimitOne = lifterOne.getReverseLimitSwitch(Type.kNormallyOpen);
-        this.downLimitTwo = lifterTwo.getReverseLimitSwitch(Type.kNormallyOpen);
-        this.downLimitThree = lifterThree.getReverseLimitSwitch(Type.kNormallyOpen);
+        // this.downLimitOne = lifterOne.getReverseLimitSwitch(Type.kNormallyOpen);
+        // this.downLimitTwo = lifterTwo.getReverseLimitSwitch(Type.kNormallyOpen);
+        // this.downLimitThree = lifterThree.getReverseLimitSwitch(Type.kNormallyOpen);
 
         this.liftEncoderOne = lifterOne.getEncoder();
         this.liftEncoderTwo = lifterTwo.getEncoder();
@@ -141,7 +143,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void manualIntake(double speed) {
         this.left.set(speed);
-        this.front.set(speed/2);
+        this.front.set(speed);
         this.right.set(speed);
     }
 
@@ -163,10 +165,13 @@ public class IntakeSubsystem extends SubsystemBase {
     // }
 
     private void monitorAndCorrectAlignment(double movementSpeed) {
-        if (this.upLimitTwo.isPressed()) {
+        if (this.upLimitTwo.isPressed() && !this.hasResetSinceSwitch) {
             this.liftEncoderOne.setPosition(0);
             this.liftEncoderTwo.setPosition(0);
             this.liftEncoderThree.setPosition(0);
+            this.hasResetSinceSwitch = true;
+        } else if(!this.upLimitTwo.isPressed() && this.hasResetSinceSwitch) {
+            this.hasResetSinceSwitch = false;
         }
         
         // double encoderReadingSum = this.liftEncoderOne.getPosition() + this.liftEncoderTwo.getPosition()
@@ -207,52 +212,52 @@ public class IntakeSubsystem extends SubsystemBase {
             this.lifterThree.set(speed);
     }
 
-    private void runLifter() {
-        if (!liftManualControl) {
-            if (shouldbeLifted) {
-            } else {
-            }
-        }
-    }
+    // private void runLifter() {
+    //     if (!liftManualControl) {
+    //         if (shouldbeLifted) {
+    //         } else {
+    //         }
+    //     }
+    // }
 
-    private void runIntake() {
-        if (atUpperLimit()) {
-            this.left.set(1);
-            this.front.set(1);
-            this.right.set(1);
+    // private void runIntake() {
+    //     if (atUpperLimit()) {
+    //         this.left.set(1);
+    //         this.front.set(1);
+    //         this.right.set(1);
 
-            this.leftController.reset();
-            this.frontController.reset();
-            this.rightController.reset();
-        } else {
-            // TODO: logic for note movement while intake is out of the way
-            ChassisSpeeds velocities = this.driveSystem.getRobotVelocity();
-            double xSpeed = velocities.vxMetersPerSecond;
-            double ySpeed = velocities.vyMetersPerSecond;
+    //         this.leftController.reset();
+    //         this.frontController.reset();
+    //         this.rightController.reset();
+    //     } else {
+    //         // TODO: logic for note movement while intake is out of the way
+    //         ChassisSpeeds velocities = this.driveSystem.getRobotVelocity();
+    //         double xSpeed = velocities.vxMetersPerSecond;
+    //         double ySpeed = velocities.vyMetersPerSecond;
 
-            // Untested!
-            this.left.set(this.leftController.calculate(getLeftSpeed(), xSpeed));
-            this.front.set(this.frontController.calculate(getFrontSpeed(), ySpeed));
-            this.right.set(this.rightController.calculate(getRightSpeed(), xSpeed));
-        }
-    }
+    //         // Untested!
+    //         this.left.set(this.leftController.calculate(getLeftSpeed(), xSpeed));
+    //         this.front.set(this.frontController.calculate(getFrontSpeed(), ySpeed));
+    //         this.right.set(this.rightController.calculate(getRightSpeed(), xSpeed));
+    //     }
+    // }
 
-    private double getLeftSpeed() {
-        return rpmToMps(this.left.getEncoder().getVelocity());
-    }
+    // private double getLeftSpeed() {
+    //     return rpmToMps(this.left.getEncoder().getVelocity());
+    // }
 
-    private double getFrontSpeed() {
-        return rpmToMps(this.front.getEncoder().getVelocity());
-    }
+    // private double getFrontSpeed() {
+    //     return rpmToMps(this.front.getEncoder().getVelocity());
+    // }
 
-    private double getRightSpeed() {
-        return rpmToMps(this.right.getEncoder().getVelocity());
-    }
+    // private double getRightSpeed() {
+    //     return rpmToMps(this.right.getEncoder().getVelocity());
+    // }
 
-    private double rpmToMps(double RPM) {
-        double RPS = RPM / 60;
-        double speedInMeterPerSecond = RPS * IntakeConstants.intakeWheelCircunferenceMeters;
-        return speedInMeterPerSecond;
-    }
+    // private double rpmToMps(double RPM) {
+    //     double RPS = RPM / 60;
+    //     double speedInMeterPerSecond = RPS * IntakeConstants.intakeWheelCircunferenceMeters;
+    //     return speedInMeterPerSecond;
+    // }
 
 }
