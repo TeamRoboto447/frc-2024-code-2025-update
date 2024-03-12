@@ -17,7 +17,6 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -26,6 +25,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -58,66 +59,37 @@ public class RobotContainer {
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
-    CommandJoystick driverJoystick = new CommandJoystick(ControllerConstants.kDriverControllerPort);
-    CommandXboxController driverGamepad = new CommandXboxController(ControllerConstants.kDriverControllerPort);
-    private final CommandXboxController operatorController = new CommandXboxController(
-            ControllerConstants.kOperatorControllerPort);
+    private final CommandJoystick commandDriverJoystick = new CommandJoystick(
+            ControllerConstants.kDriverControllerPort);
+    private final Joystick basicDriverJoystick = commandDriverJoystick.getHID();
+    private final CommandXboxController commandDriverGamepad = new CommandXboxController(
+            ControllerConstants.kDriverControllerPort);
+    private final XboxController basicDriverGamepad = commandDriverGamepad.getHID();
 
-    private final TeleopIndex indexerCommand = new TeleopIndex(
-            intakeSubsystem,
-            () -> (-operatorController.getLeftY()) / 4,
-            () -> operatorController.getRightTriggerAxis() - operatorController.getLeftTriggerAxis(),
-            () -> operatorController.x().getAsBoolean() ? 1 : operatorController.y().getAsBoolean() ? -1 : 0 // if x
-                                                                                                             // return
-                                                                                                             // 1,
-                                                                                                             // else
-                                                                                                             // if y
-                                                                                                             // return
-                                                                                                             // -1,
-                                                                                                             // else
-                                                                                                             // return
-                                                                                                             // 0
-    );
-    private final TeleopShoot shooterCommand = new TeleopShoot(this.shooterSubsystem, this.operatorController);
+    private final CommandXboxController commandOperatorController = new CommandXboxController(
+            ControllerConstants.kOperatorControllerPort);
+    private final XboxController basicOperatorController = commandOperatorController.getHID();
+
+    private final TeleopIndex indexerCommand = new TeleopIndex(intakeSubsystem, commandOperatorController);
+
+    private final TeleopShoot shooterCommand = new TeleopShoot(this.shooterSubsystem, this.commandOperatorController);
 
     private final DoubleSupplier climbSpeedSupplierJoystick = new DoubleSupplier() {
         @Override
         public double getAsDouble() {
-            boolean up = driverJoystick.button(6).getAsBoolean() || operatorController.pov(0).getAsBoolean();
-            boolean down = driverJoystick.button(5).getAsBoolean() || operatorController.pov(180).getAsBoolean();
+            boolean up = basicDriverJoystick.getRawButton(6) || basicOperatorController.getPOV() == 0;
+            boolean down = basicDriverJoystick.getRawButton(5) || basicOperatorController.getPOV() == 180;
             double speed = 1;
-            return up ? speed : down ? -speed : 0; // if
-                                                   // up
-                                                   // return
-                                                   // speed
-                                                   // else
-                                                   // if
-                                                   // down
-                                                   // return
-                                                   // -speed
-                                                   // else
-                                                   // return
-                                                   // 0
+            return up ? speed : down ? -speed : 0;
         }
     };
     private final DoubleSupplier climbSpeedSupplierGamepad = new DoubleSupplier() {
         @Override
         public double getAsDouble() {
-            boolean up = driverGamepad.a().getAsBoolean() || operatorController.pov(180).getAsBoolean();
-            boolean down = driverGamepad.b().getAsBoolean() || operatorController.pov(0).getAsBoolean();
+            boolean up = basicDriverGamepad.getAButton() || basicOperatorController.getPOV() == 0;
+            boolean down = basicDriverGamepad.getBButton() || basicOperatorController.getPOV() == 180;
             double speed = 1;
-            return up ? speed : down ? -speed : 0; // if
-                                                   // up
-                                                   // return
-                                                   // speed
-                                                   // else
-                                                   // if
-                                                   // down
-                                                   // return
-                                                   // -speed
-                                                   // else
-                                                   // return
-                                                   // 0
+            return up ? speed : down ? -speed : 0;
         }
     };
     private final ClimbTeleop climberCommand = new ClimbTeleop(climberSubsystem,
@@ -162,9 +134,10 @@ public class RobotContainer {
                 @Override
                 public double getAsDouble() {
                     double speed = 0;
-                    speed = yDirFromPOV(driverJoystick.getHID().getPOV()) * adjustSpeed;
-                    if(speed == 0) speed = MathUtil.applyDeadband(driverJoystick.getY() * maxAllowedSpeedRange,
-                            ControllerConstants.Y_DEADBAND);
+                    speed = yDirFromPOV(commandDriverJoystick.getHID().getPOV()) * adjustSpeed;
+                    if (speed == 0)
+                        speed = MathUtil.applyDeadband(commandDriverJoystick.getY() * maxAllowedSpeedRange,
+                                ControllerConstants.Y_DEADBAND);
                     return speed;
                 }
             };
@@ -173,9 +146,10 @@ public class RobotContainer {
                 @Override
                 public double getAsDouble() {
                     double speed = 0;
-                    speed = xDirFromPOV(driverJoystick.getHID().getPOV()) * adjustSpeed;
-                    if(speed == 0) speed = MathUtil.applyDeadband(driverJoystick.getX() * maxAllowedSpeedRange,
-                            ControllerConstants.X_DEADBAND);
+                    speed = xDirFromPOV(commandDriverJoystick.getHID().getPOV()) * adjustSpeed;
+                    if (speed == 0)
+                        speed = MathUtil.applyDeadband(commandDriverJoystick.getX() * maxAllowedSpeedRange,
+                                ControllerConstants.X_DEADBAND);
                     return speed;
                 }
             };
@@ -184,13 +158,13 @@ public class RobotContainer {
                 @Override
                 public double getAsDouble() {
                     double speed = 0;
-                    if (driverJoystick.button(1).getAsBoolean()) {
-                        speed = MathUtil.applyDeadband((driverJoystick.getZ() * turnSpeedPercentage),
+                    if (basicDriverJoystick.getRawButton(1)) {
+                        speed = MathUtil.applyDeadband((commandDriverJoystick.getZ() * turnSpeedPercentage),
                                 ControllerConstants.Z_DEADBAND);
                     } else {
-                        if (driverJoystick.button(4).getAsBoolean())
+                        if (basicDriverGamepad.getRawButton(4))
                             speed = adjustTurnSpeed;
-                        if (driverJoystick.button(3).getAsBoolean())
+                        if (basicDriverGamepad.getRawButton(3))
                             speed = -adjustTurnSpeed;
                     }
                     return speed;
@@ -204,13 +178,13 @@ public class RobotContainer {
                     () -> true);
         } else {
             closedFieldRel = new TeleopDrive(drivebase,
-                    () -> MathUtil.applyDeadband(driverGamepad.getLeftY() *
+                    () -> MathUtil.applyDeadband(commandDriverGamepad.getLeftY() *
                             maxAllowedSpeedRange,
                             ControllerConstants.Y_DEADBAND),
-                    () -> MathUtil.applyDeadband(driverGamepad.getLeftX() *
+                    () -> MathUtil.applyDeadband(commandDriverGamepad.getLeftX() *
                             maxAllowedSpeedRange,
                             ControllerConstants.X_DEADBAND),
-                    () -> MathUtil.applyDeadband(driverGamepad.getRightX() * turnSpeedPercentage,
+                    () -> MathUtil.applyDeadband(commandDriverGamepad.getRightX() * turnSpeedPercentage,
                             ControllerConstants.Z_DEADBAND),
                     () -> true);
         }
