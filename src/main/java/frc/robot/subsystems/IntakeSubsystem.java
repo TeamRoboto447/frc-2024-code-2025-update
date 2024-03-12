@@ -8,6 +8,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkLimitSwitch;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.SparkLimitSwitch.Type;
 
 import frc.robot.Constants.IntakeConstants;
@@ -54,6 +55,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 IntakeConstants.leftControllerVals[1],
                 IntakeConstants.leftControllerVals[2]);
         this.left.setInverted(false);
+        this.setPeriods(this.left);
 
         this.front = new CANSparkMax(IntakeConstants.frontMotorId, MotorType.kBrushless);
         this.frontController = new PIDController(
@@ -61,6 +63,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 IntakeConstants.frontControllerVals[1],
                 IntakeConstants.frontControllerVals[2]);
         this.front.setInverted(false);
+        this.setPeriods(this.front);
 
         this.right = new CANSparkMax(IntakeConstants.rightMotorId, MotorType.kBrushless);
         this.rightController = new PIDController(
@@ -68,17 +71,22 @@ public class IntakeSubsystem extends SubsystemBase {
                 IntakeConstants.rightControllerVals[1],
                 IntakeConstants.rightControllerVals[2]);
         this.right.setInverted(true);
+        this.setPeriods(this.right);
+
         this.loader = new CANSparkMax(IntakeConstants.loaderMotorId, MotorType.kBrushless);
 
         this.lifterOne = new CANSparkMax(IntakeConstants.lifterOne, MotorType.kBrushless);
         this.lifterOne.setInverted(false);
         this.lifterOne.setIdleMode(IdleMode.kBrake);
+        this.setPeriods(this.lifterOne);
         this.lifterTwo = new CANSparkMax(IntakeConstants.lifterTwo, MotorType.kBrushless);
         this.lifterTwo.setInverted(false);
         this.lifterOne.setIdleMode(IdleMode.kBrake);
+        this.setPeriods(this.lifterTwo);
         this.lifterThree = new CANSparkMax(IntakeConstants.lifterThree, MotorType.kBrushless);
         this.lifterThree.setInverted(false);
         this.lifterOne.setIdleMode(IdleMode.kBrake);
+        this.setPeriods(this.lifterThree);
 
         // this.upLimitOne = lifterOne.getForwardLimitSwitch(Type.kNormallyOpen);
         this.upLimitTwo = lifterTwo.getForwardLimitSwitch(Type.kNormallyOpen);
@@ -93,6 +101,16 @@ public class IntakeSubsystem extends SubsystemBase {
         this.liftEncoderThree = lifterThree.getEncoder();
     }
 
+    private void setPeriods(CANSparkMax sparkMax) {
+        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 500);
+        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
+        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 500);
+        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 500);
+        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 200);
+        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 200);
+    }
+
     public boolean atUpperLimit() {
         // return this.upLimitOne.isPressed() && this.upLimitTwo.isPressed() &&
         // this.upLimitThree.isPressed();
@@ -102,7 +120,8 @@ public class IntakeSubsystem extends SubsystemBase {
     public boolean atLowerLimit() {
         // return this.downLimitOne.isPressed() && this.downLimitTwo.isPressed() &&
         // this.downLimitThree.isPressed();
-        if(this.liftEncoderTwo.getPosition() <= -450) return true;
+        if (this.liftEncoderTwo.getPosition() <= -450)
+            return true;
         return false;
     }
 
@@ -153,15 +172,17 @@ public class IntakeSubsystem extends SubsystemBase {
         // runIntake();
     }
 
-    // private boolean needsCorrection(double encoderPos, double avgPos, boolean positiveDir) {
-    //     double allowedDeviation = 5;
-    //     double deviation = encoderPos - avgPos;
-    //     if(Math.abs(deviation) < allowedDeviation) return false;
-    //     if(positiveDir && deviation > 0)
-    //         System.out.println("Correcting because going up and deviation positive\nPos:"+encoderPos+" Avg:"+avgPos+" Dev: "+deviation);
-    //     else if(!positiveDir && deviation < 0)
-    //         return false;
-    //     return false;
+    // private boolean needsCorrection(double encoderPos, double avgPos, boolean
+    // positiveDir) {
+    // double allowedDeviation = 5;
+    // double deviation = encoderPos - avgPos;
+    // if(Math.abs(deviation) < allowedDeviation) return false;
+    // if(positiveDir && deviation > 0)
+    // System.out.println("Correcting because going up and deviation
+    // positive\nPos:"+encoderPos+" Avg:"+avgPos+" Dev: "+deviation);
+    // else if(!positiveDir && deviation < 0)
+    // return false;
+    // return false;
     // }
 
     private void monitorAndCorrectAlignment(double movementSpeed) {
@@ -170,29 +191,33 @@ public class IntakeSubsystem extends SubsystemBase {
             this.liftEncoderTwo.setPosition(0);
             this.liftEncoderThree.setPosition(0);
             this.hasResetSinceSwitch = true;
-        } else if(!this.upLimitTwo.isPressed() && this.hasResetSinceSwitch) {
+        } else if (!this.upLimitTwo.isPressed() && this.hasResetSinceSwitch) {
             this.hasResetSinceSwitch = false;
         }
-        
-        // double encoderReadingSum = this.liftEncoderOne.getPosition() + this.liftEncoderTwo.getPosition()
-        //         + this.liftEncoderThree.getPosition();
+
+        // double encoderReadingSum = this.liftEncoderOne.getPosition() +
+        // this.liftEncoderTwo.getPosition()
+        // + this.liftEncoderThree.getPosition();
         // double avgEncoderReading = encoderReadingSum / 3;
-        
-        // if(needsCorrection(this.liftEncoderOne.getPosition(), avgEncoderReading, movementSpeed > 0)) {
-        //     this.correctingOne = true;
-        //     this.lifterOne.set(0);
+
+        // if(needsCorrection(this.liftEncoderOne.getPosition(), avgEncoderReading,
+        // movementSpeed > 0)) {
+        // this.correctingOne = true;
+        // this.lifterOne.set(0);
         // } else
         // this.correctingOne = false;
 
-        // if(needsCorrection(this.liftEncoderTwo.getPosition(), avgEncoderReading, movementSpeed > 0)) {
-        //     this.correctingTwo = true;
-        //     this.lifterTwo.set(0);
+        // if(needsCorrection(this.liftEncoderTwo.getPosition(), avgEncoderReading,
+        // movementSpeed > 0)) {
+        // this.correctingTwo = true;
+        // this.lifterTwo.set(0);
         // } else
         // this.correctingTwo = false;
 
-        // if(needsCorrection(this.liftEncoderThree.getPosition(), avgEncoderReading, movementSpeed > 0)) {
-        //     this.correctingThree = true;
-        //     this.lifterThree.set(0);
+        // if(needsCorrection(this.liftEncoderThree.getPosition(), avgEncoderReading,
+        // movementSpeed > 0)) {
+        // this.correctingThree = true;
+        // this.lifterThree.set(0);
         // } else
         // this.correctingThree = false;
     }
@@ -201,9 +226,9 @@ public class IntakeSubsystem extends SubsystemBase {
         monitorAndCorrectAlignment(speed);
         if (speed > 0 && atUpperLimit())
             speed = 0;
-        else if(speed < 0 && atLowerLimit())
+        else if (speed < 0 && atLowerLimit())
             speed = 0;
-        
+
         if (!this.correctingOne)
             this.lifterOne.set(speed);
         if (!this.correctingTwo)
@@ -213,51 +238,52 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     // private void runLifter() {
-    //     if (!liftManualControl) {
-    //         if (shouldbeLifted) {
-    //         } else {
-    //         }
-    //     }
+    // if (!liftManualControl) {
+    // if (shouldbeLifted) {
+    // } else {
+    // }
+    // }
     // }
 
     // private void runIntake() {
-    //     if (atUpperLimit()) {
-    //         this.left.set(1);
-    //         this.front.set(1);
-    //         this.right.set(1);
+    // if (atUpperLimit()) {
+    // this.left.set(1);
+    // this.front.set(1);
+    // this.right.set(1);
 
-    //         this.leftController.reset();
-    //         this.frontController.reset();
-    //         this.rightController.reset();
-    //     } else {
-    //         // TODO: logic for note movement while intake is out of the way
-    //         ChassisSpeeds velocities = this.driveSystem.getRobotVelocity();
-    //         double xSpeed = velocities.vxMetersPerSecond;
-    //         double ySpeed = velocities.vyMetersPerSecond;
+    // this.leftController.reset();
+    // this.frontController.reset();
+    // this.rightController.reset();
+    // } else {
+    // // TODO: logic for note movement while intake is out of the way
+    // ChassisSpeeds velocities = this.driveSystem.getRobotVelocity();
+    // double xSpeed = velocities.vxMetersPerSecond;
+    // double ySpeed = velocities.vyMetersPerSecond;
 
-    //         // Untested!
-    //         this.left.set(this.leftController.calculate(getLeftSpeed(), xSpeed));
-    //         this.front.set(this.frontController.calculate(getFrontSpeed(), ySpeed));
-    //         this.right.set(this.rightController.calculate(getRightSpeed(), xSpeed));
-    //     }
+    // // Untested!
+    // this.left.set(this.leftController.calculate(getLeftSpeed(), xSpeed));
+    // this.front.set(this.frontController.calculate(getFrontSpeed(), ySpeed));
+    // this.right.set(this.rightController.calculate(getRightSpeed(), xSpeed));
+    // }
     // }
 
     // private double getLeftSpeed() {
-    //     return rpmToMps(this.left.getEncoder().getVelocity());
+    // return rpmToMps(this.left.getEncoder().getVelocity());
     // }
 
     // private double getFrontSpeed() {
-    //     return rpmToMps(this.front.getEncoder().getVelocity());
+    // return rpmToMps(this.front.getEncoder().getVelocity());
     // }
 
     // private double getRightSpeed() {
-    //     return rpmToMps(this.right.getEncoder().getVelocity());
+    // return rpmToMps(this.right.getEncoder().getVelocity());
     // }
 
     // private double rpmToMps(double RPM) {
-    //     double RPS = RPM / 60;
-    //     double speedInMeterPerSecond = RPS * IntakeConstants.intakeWheelCircunferenceMeters;
-    //     return speedInMeterPerSecond;
+    // double RPS = RPM / 60;
+    // double speedInMeterPerSecond = RPS *
+    // IntakeConstants.intakeWheelCircunferenceMeters;
+    // return speedInMeterPerSecond;
     // }
 
 }

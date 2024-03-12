@@ -29,9 +29,10 @@ import swervelib.math.Matter;
  */
 public final class Constants {
 
-    public static final double ROBOT_MASS = ((100 /* robot */) + (12.89 + 15 /* battery & bumper */)) / 2.2; // lb /2.2 = kg
-    public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(6)), ROBOT_MASS);
-    public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
+    public static final double ROBOT_MASS = ((100 /* robot */) + (12.89 + 15 /* battery & bumper */)) / 2.2; // lb /2.2
+                                                                                                             // = kg
+    public static final Matter CHASSIS = new Matter(new Translation3d(0, 0, Units.inchesToMeters(6)), ROBOT_MASS);
+    public static final double LOOP_TIME = 0.13; // s, 20ms + 110ms sprk max velocity lag
 
     public static final class DrivetrainConstants {
 
@@ -42,9 +43,9 @@ public final class Constants {
         public static final int kDriverControllerPort = 0;
         public static final int kOperatorControllerPort = 1;
 
-        public static final double X_DEADBAND = 0;
-        public static final double Y_DEADBAND = 0;
-        public static final double Z_DEADBAND = 0;
+        public static final double X_DEADBAND = 0.05;
+        public static final double Y_DEADBAND = 0.05;
+        public static final double Z_DEADBAND = 0.05;
     }
 
     public static class ShooterConstants {
@@ -53,7 +54,7 @@ public final class Constants {
         public static final int aimMotorId = 33;
 
         public static final int aimPotentiometer = 0;
-        public static final double[] aimControllerVals = new double[]{0.7, 0.002, 0.07}; // P, I, D
+        public static final double[] aimControllerVals = new double[] { 0.7, 0.002, 0.07 }; // P, I, D
     }
 
     public static class ClimberConstants {
@@ -64,23 +65,23 @@ public final class Constants {
         public static final double intakeWheelDiameterMeters = Units.inchesToMeters(2.25);
         public static final double intakeWheelCircunferenceMeters = intakeWheelDiameterMeters * Math.PI;
 
-        public static final double[] leftControllerVals = new double[]{0, 0, 0}; // P, I, D
-        public static final double[] frontControllerVals = new double[]{0, 0, 0}; // P, I, D
-        public static final double[] rightControllerVals = new double[]{0, 0, 0}; // P, I, D
+        public static final double[] leftControllerVals = new double[] { 0, 0, 0 }; // P, I, D
+        public static final double[] frontControllerVals = new double[] { 0, 0, 0 }; // P, I, D
+        public static final double[] rightControllerVals = new double[] { 0, 0, 0 }; // P, I, D
 
         public static final int leftMotorId = 21;
         public static final int frontMotorId = 22;
         public static final int rightMotorId = 23;
-        
+
         public static final int loaderMotorId = 30;
-        
+
         public static final int lifterOne = 25;
         public static final int lifterTwo = 26;
         public static final int lifterThree = 27;
     }
 
     public static class VisionConstants {
-        public static boolean USE_VISION = true;
+        public static boolean USE_VISION = false;
         /** Minimum target ambiguity. Targets with higher ambiguity will be discarded */
         public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.2;
         public static final double POSE_AMBIGUITY_SHIFTER = 0.2;
@@ -90,17 +91,19 @@ public final class Constants {
         public static final int TAG_PRESENCE_WEIGHT = 10;
 
         public static final Transform3d ROBOT_TO_LEFT_CAM = new Transform3d(
-                new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(11.25), Units.inchesToMeters(17.75)),
+                new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(11.25),
+                        Units.inchesToMeters(17.75)),
                 new Rotation3d(Math.toRadians(90), Math.toRadians(10), Math.toRadians(0)));
-                // Translation is Forward, Left, Up positive
-                // Rotation is Yaw, Pitch, Roll (cw positive)
-        // TODO: Get measurements        
+        // Translation is Forward, Left, Up positive
+        // Rotation is Yaw, Pitch, Roll (cw positive)
+        // TODO: Get measurements
         public static final Transform3d ROBOT_TO_FRONT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
                 new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
 
         public static final Transform3d ROBOT_TO_RIGHT_CAM = new Transform3d(
-                new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(-11.25), Units.inchesToMeters(17.75)),
+                new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(-11.25),
+                        Units.inchesToMeters(17.75)),
                 new Rotation3d(Math.toRadians(-90), Math.toRadians(10), Math.toRadians(0)));
 
         public static final Transform3d ROBOT_TO_BACK_CAM = new Transform3d(

@@ -40,7 +40,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             this.rightEstimator = new PhotonRunnable(new PhotonCamera("RightCam"),
                     VisionConstants.ROBOT_TO_RIGHT_CAM);
             // this.backEstimator = new PhotonRunnable(new PhotonCamera("BackCam"),
-            //         VisionConstants.ROBOT_TO_BACK_CAM);
+            // VisionConstants.ROBOT_TO_BACK_CAM);
 
             this.allNotifier = new Notifier(() -> {
                 // frontEstimator.run();
@@ -138,8 +138,9 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             // New pose from vision
             var pose2d = cameraPose.estimatedPose.toPose2d();
             // System.out.println("Adding measurement " + getFomattedPose(pose2d));
-            swerveSubsystem.getSwerveDrive().addVisionMeasurement(pose2d, cameraPose.timestampSeconds,
-                    confidenceCalculator(cameraPose));
+            // swerveSubsystem.getSwerveDrive().addVisionMeasurement(pose2d,
+            // cameraPose.timestampSeconds,
+            // confidenceCalculator(cameraPose));
         }
     }
 }
