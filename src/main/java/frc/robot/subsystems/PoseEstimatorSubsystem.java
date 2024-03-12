@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.VisionConstants.USE_VISION;
+
 import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
@@ -18,30 +20,46 @@ import frc.robot.Constants.VisionConstants;
 
 public class PoseEstimatorSubsystem extends SubsystemBase {
     private final SwerveSubsystem swerveSubsystem;
-    private final PhotonRunnable leftEstimator = new PhotonRunnable(new PhotonCamera("LeftCam"),
-            VisionConstants.ROBOT_TO_LEFT_CAM);
-    // private final PhotonRunnable frontEstimator = new PhotonRunnable(new PhotonCamera("FisheyeCam"), // May not use this for positioning
-    //         VisionConstants.ROBOT_TO_FRONT_CAM);
-    private final PhotonRunnable rightEstimator = new PhotonRunnable(new PhotonCamera("RightCam"),
-            VisionConstants.ROBOT_TO_RIGHT_CAM);
-    private final PhotonRunnable backEstimator = new PhotonRunnable(new PhotonCamera("BackCam"),
-            VisionConstants.ROBOT_TO_BACK_CAM);
+    private final PhotonRunnable leftEstimator;
+    // private final PhotonRunnable frontEstimator = new PhotonRunnable(new
+    // PhotonCamera("FisheyeCam"), // May not use this for positioning
+    // VisionConstants.ROBOT_TO_FRONT_CAM);
+    private final PhotonRunnable rightEstimator;
+    private final PhotonRunnable backEstimator;
 
-    private final Notifier allNotifier = new Notifier(() -> {
-        // frontEstimator.run();
-        leftEstimator.run();
-        backEstimator.run();
-        rightEstimator.run();
-    });
+    private final Notifier allNotifier;
 
     public PoseEstimatorSubsystem(Supplier<Rotation2d> rotationSupplier,
             Supplier<SwerveModulePosition[]> modulePositionSupplier, SwerveSubsystem swerveSubsystem) {
         // this.rotationSupplier = rotationSupplier;
         // this.modulePositionSupplier = modulePositionSupplier;
+
+        if (USE_VISION) {
+            this.leftEstimator = new PhotonRunnable(new PhotonCamera("LeftCam"),
+                    VisionConstants.ROBOT_TO_LEFT_CAM);
+            this.rightEstimator = new PhotonRunnable(new PhotonCamera("RightCam"),
+                    VisionConstants.ROBOT_TO_RIGHT_CAM);
+            this.backEstimator = new PhotonRunnable(new PhotonCamera("BackCam"),
+                    VisionConstants.ROBOT_TO_BACK_CAM);
+
+            this.allNotifier = new Notifier(() -> {
+                // frontEstimator.run();
+                leftEstimator.run();
+                backEstimator.run();
+                rightEstimator.run();
+            });
+            allNotifier.setName("runAllVision");
+            allNotifier.startPeriodic(0.02);
+        } else {
+            this.leftEstimator = null;
+            this.rightEstimator = null;
+            this.backEstimator = null;
+
+            this.allNotifier = null;
+        }
+
         this.swerveSubsystem = swerveSubsystem;
 
-        allNotifier.setName("runAllVision");
-        allNotifier.startPeriodic(0.02);
     }
 
     @Override
@@ -51,8 +69,6 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             estimatorChecker(leftEstimator);
             estimatorChecker(backEstimator);
             estimatorChecker(rightEstimator);
-        } else {
-            allNotifier.close();
         }
     }
 
@@ -109,11 +125,19 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         return Constants.VisionConstants.VISION_MEASUREMENT_STANDARD_DEVIATIONS.times(confidenceMultiplier);
     }
 
+    private String getFomattedPose(Pose2d pose) {
+        return String.format("(%.3f, %.3f) %.2f degrees",
+                pose.getX(),
+                pose.getY(),
+                pose.getRotation().getDegrees());
+    }
+
     public void estimatorChecker(PhotonRunnable estamator) {
         var cameraPose = estamator.grabLatestEstimatedPose();
         if (cameraPose != null) {
             // New pose from vision
             var pose2d = cameraPose.estimatedPose.toPose2d();
+            System.out.println("Adding measurement " + getFomattedPose(pose2d));
             swerveSubsystem.getSwerveDrive().addVisionMeasurement(pose2d, cameraPose.timestampSeconds,
                     confidenceCalculator(cameraPose));
         }

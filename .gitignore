@@ -34,3 +34,5 @@ packages/
 .gradle/*
 build/*
 ctre_sim/*
+crashlogs/*
+build/*

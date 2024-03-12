@@ -102,7 +102,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public boolean atLowerLimit() {
         // return this.downLimitOne.isPressed() && this.downLimitTwo.isPressed() &&
         // this.downLimitThree.isPressed();
-        if(this.liftEncoderTwo.getPosition() <= -415) return true;
+        if(this.liftEncoderTwo.getPosition() <= -450) return true;
         return false;
     }
 

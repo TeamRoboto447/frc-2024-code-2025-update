@@ -17,6 +17,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -42,17 +43,16 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    private final boolean usingJoystick = true; // Set to false if using gamepad
-    private final double maxAllowedSpeedRange = 1; // percentage of max speed (inputs are multiplied by this number)
-    private final double turnSpeedPercentage =  0.8; // percentage of max turn speed to allow
+    private final boolean driverUsingJoystick = true; // Set to false if using gamepad
+    private final double maxAllowedSpeedRange = 0.75; // percentage of max speed (inputs are multiplied by this number)
+    private final double turnSpeedPercentage = 0.7; // percentage of max turn speed to allow
+    private final double adjustSpeed = 0.15; // percentage of the max speed to move when using fine adjustments
+    private final double adjustTurnSpeed = 0.15; // percentage of the max speed to move when using fine adjustments
 
     private final SendableChooser<Command> autoChooser;
     // The robot's subsystems and commands are defined here...
     private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
             "swerve"));
-    // private final PoseEstimatorSubsystem poseSubsystem = new PoseEstimatorSubsystem(
-    //         () -> drivebase.getSwerveDrive().getYaw(), () -> drivebase.getSwerveDrive().getModulePositions(),
-    //         drivebase);
 
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(drivebase);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
@@ -69,11 +69,14 @@ public class RobotContainer {
             () -> operatorController.getRightTriggerAxis() - operatorController.getLeftTriggerAxis(),
             () -> operatorController.x().getAsBoolean() ? 1 : operatorController.y().getAsBoolean() ? -1 : 0 // if x
                                                                                                              // return
-                                                                                                             // 1, else
+                                                                                                             // 1,
+                                                                                                             // else
                                                                                                              // if y
                                                                                                              // return
-                                                                                                             // -1, else
-                                                                                                             // return 0
+                                                                                                             // -1,
+                                                                                                             // else
+                                                                                                             // return
+                                                                                                             // 0
     );
     private final TeleopShoot shooterCommand = new TeleopShoot(this.shooterSubsystem, this.operatorController);
 
@@ -81,22 +84,60 @@ public class RobotContainer {
         @Override
         public double getAsDouble() {
             boolean up = driverJoystick.button(6).getAsBoolean() || operatorController.pov(0).getAsBoolean();
-            boolean down = driverJoystick.button(4).getAsBoolean() || operatorController.pov(180).getAsBoolean();
+            boolean down = driverJoystick.button(5).getAsBoolean() || operatorController.pov(180).getAsBoolean();
             double speed = 1;
-            return up ? speed : down ? -speed : 0; // if up return speed else if down return -speed else return 0
+            return up ? speed : down ? -speed : 0; // if
+                                                   // up
+                                                   // return
+                                                   // speed
+                                                   // else
+                                                   // if
+                                                   // down
+                                                   // return
+                                                   // -speed
+                                                   // else
+                                                   // return
+                                                   // 0
         }
     };
     private final DoubleSupplier climbSpeedSupplierGamepad = new DoubleSupplier() {
         @Override
         public double getAsDouble() {
-            boolean up = driverGamepad.a().getAsBoolean() || operatorController.pov(0).getAsBoolean();
-            boolean down = driverGamepad.b().getAsBoolean() || operatorController.pov(180).getAsBoolean();
+            boolean up = driverGamepad.a().getAsBoolean() || operatorController.pov(180).getAsBoolean();
+            boolean down = driverGamepad.b().getAsBoolean() || operatorController.pov(0).getAsBoolean();
             double speed = 1;
-            return up ? speed : down ? -speed : 0; // if up return speed else if down return -speed else return 0
+            return up ? speed : down ? -speed : 0; // if
+                                                   // up
+                                                   // return
+                                                   // speed
+                                                   // else
+                                                   // if
+                                                   // down
+                                                   // return
+                                                   // -speed
+                                                   // else
+                                                   // return
+                                                   // 0
         }
     };
     private final ClimbTeleop climberCommand = new ClimbTeleop(climberSubsystem,
-            usingJoystick ? climbSpeedSupplierJoystick : climbSpeedSupplierGamepad);
+            driverUsingJoystick ? climbSpeedSupplierJoystick : climbSpeedSupplierGamepad);
+
+    private double yDirFromPOV(int pov) {
+        if (pov > 270 || (pov < 90 && pov > -1))
+            return -1; // forward
+        if (pov > 90 && pov < 270)
+            return 1; // backward
+        return 0;
+    }
+
+    private double xDirFromPOV(int pov) {
+        if (pov > 0 && pov < 180)
+            return 1; // right
+        if (pov > 180 && pov < 360)
+            return -1; // left
+        return 0;
+    }
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -112,16 +153,54 @@ public class RobotContainer {
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
+        new PoseEstimatorSubsystem(() -> drivebase.getSwerveDrive().getYaw(),
+                () -> drivebase.getSwerveDrive().getModulePositions(), drivebase);
+
         TeleopDrive closedFieldRel = null;
-        if (usingJoystick) {
+        if (driverUsingJoystick) {
+            DoubleSupplier ySpeed = new DoubleSupplier() {
+                @Override
+                public double getAsDouble() {
+                    double speed = 0;
+                    speed = yDirFromPOV(driverJoystick.getHID().getPOV()) * adjustSpeed;
+                    if(speed == 0) speed = MathUtil.applyDeadband(driverJoystick.getY() * maxAllowedSpeedRange,
+                            ControllerConstants.Y_DEADBAND);
+                    return speed;
+                }
+            };
+
+            DoubleSupplier xSpeed = new DoubleSupplier() {
+                @Override
+                public double getAsDouble() {
+                    double speed = 0;
+                    speed = xDirFromPOV(driverJoystick.getHID().getPOV()) * adjustSpeed;
+                    if(speed == 0) speed = MathUtil.applyDeadband(driverJoystick.getX() * maxAllowedSpeedRange,
+                            ControllerConstants.X_DEADBAND);
+                    return speed;
+                }
+            };
+
+            DoubleSupplier turnSpeed = new DoubleSupplier() {
+                @Override
+                public double getAsDouble() {
+                    double speed = 0;
+                    if (driverJoystick.button(1).getAsBoolean()) {
+                        speed = MathUtil.applyDeadband((driverJoystick.getZ() * turnSpeedPercentage),
+                                ControllerConstants.Z_DEADBAND);
+                    } else {
+                        if (driverJoystick.button(4).getAsBoolean())
+                            speed = adjustTurnSpeed;
+                        if (driverJoystick.button(3).getAsBoolean())
+                            speed = -adjustTurnSpeed;
+                    }
+                    return speed;
+                }
+            };
+
             closedFieldRel = new TeleopDrive(drivebase,
-                    () -> MathUtil.applyDeadband(driverJoystick.getY() * maxAllowedSpeedRange,
-                            ControllerConstants.Y_DEADBAND),
-                    () -> MathUtil.applyDeadband(driverJoystick.getX() * maxAllowedSpeedRange,
-                            ControllerConstants.X_DEADBAND),
-                    () -> MathUtil.applyDeadband(
-                            (driverJoystick.button(1).getAsBoolean() ? driverJoystick.getZ() * turnSpeedPercentage : 0),
-                            ControllerConstants.Z_DEADBAND),
+                    ySpeed,
+                    xSpeed,
+                    turnSpeed,
                     () -> true);
         } else {
             closedFieldRel = new TeleopDrive(drivebase,
