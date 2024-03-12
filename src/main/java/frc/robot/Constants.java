@@ -93,9 +93,9 @@ public final class Constants {
         public static final Transform3d ROBOT_TO_LEFT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(11.25),
                         Units.inchesToMeters(17.75)),
-                new Rotation3d(Math.toRadians(90), Math.toRadians(10), Math.toRadians(0)));
+                new Rotation3d(Math.toRadians(-90), Math.toRadians(-10), Math.toRadians(0)));
         // Translation is Forward, Left, Up positive
-        // Rotation is Yaw, Pitch, Roll (cw positive)
+        // Rotation is Yaw, Pitch, Roll (ccw positive)
         // TODO: Get measurements
         public static final Transform3d ROBOT_TO_FRONT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
@@ -104,11 +104,11 @@ public final class Constants {
         public static final Transform3d ROBOT_TO_RIGHT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(-11.25),
                         Units.inchesToMeters(17.75)),
-                new Rotation3d(Math.toRadians(-90), Math.toRadians(10), Math.toRadians(0)));
+                new Rotation3d(Math.toRadians(90), Math.toRadians(-10), Math.toRadians(0)));
 
         public static final Transform3d ROBOT_TO_BACK_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-17.5), Units.inchesToMeters(-8.75), Units.inchesToMeters(9.75)),
-                new Rotation3d(Math.toRadians(180), Math.toRadians(10), Math.toRadians(0)));
+                new Rotation3d(Math.toRadians(180), Math.toRadians(-10), Math.toRadians(0)));
 
         /**
          * Standard deviations of model states. Increase these numbers to trust your
