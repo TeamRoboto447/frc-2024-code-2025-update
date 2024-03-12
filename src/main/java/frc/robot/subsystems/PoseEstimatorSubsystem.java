@@ -25,7 +25,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
     // PhotonCamera("FisheyeCam"), // May not use this for positioning
     // VisionConstants.ROBOT_TO_FRONT_CAM);
     private final PhotonRunnable rightEstimator;
-    private final PhotonRunnable backEstimator;
+    // private final PhotonRunnable backEstimator;
 
     private final Notifier allNotifier;
 
@@ -39,13 +39,13 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
                     VisionConstants.ROBOT_TO_LEFT_CAM);
             this.rightEstimator = new PhotonRunnable(new PhotonCamera("RightCam"),
                     VisionConstants.ROBOT_TO_RIGHT_CAM);
-            this.backEstimator = new PhotonRunnable(new PhotonCamera("BackCam"),
-                    VisionConstants.ROBOT_TO_BACK_CAM);
+            // this.backEstimator = new PhotonRunnable(new PhotonCamera("BackCam"),
+            //         VisionConstants.ROBOT_TO_BACK_CAM);
 
             this.allNotifier = new Notifier(() -> {
                 // frontEstimator.run();
                 leftEstimator.run();
-                backEstimator.run();
+                // backEstimator.run();
                 rightEstimator.run();
             });
             allNotifier.setName("runAllVision");
@@ -53,7 +53,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         } else {
             this.leftEstimator = null;
             this.rightEstimator = null;
-            this.backEstimator = null;
+            // this.backEstimator = null;
 
             this.allNotifier = null;
         }
@@ -67,7 +67,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         if (VisionConstants.USE_VISION) {
             // estimatorChecker(frontEstimator);
             estimatorChecker(leftEstimator);
-            estimatorChecker(backEstimator);
+            // estimatorChecker(backEstimator);
             estimatorChecker(rightEstimator);
         }
     }
@@ -137,7 +137,7 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         if (cameraPose != null) {
             // New pose from vision
             var pose2d = cameraPose.estimatedPose.toPose2d();
-            System.out.println("Adding measurement " + getFomattedPose(pose2d));
+            // System.out.println("Adding measurement " + getFomattedPose(pose2d));
             swerveSubsystem.getSwerveDrive().addVisionMeasurement(pose2d, cameraPose.timestampSeconds,
                     confidenceCalculator(cameraPose));
         }
