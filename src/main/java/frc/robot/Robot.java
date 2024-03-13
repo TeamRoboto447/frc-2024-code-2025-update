@@ -142,10 +142,12 @@ public class Robot extends TimedRobot {
         Optional<Alliance> currentAlliance = DriverStation.getAlliance();
         if (currentAlliance.isEmpty())
             return; // No alliance data, don't try to read it
+        Alliance currAlliance = currentAlliance.get();
 
         // If we have data, and have a new alliance from last time
-        if (DriverStation.isDSAttached() && currentAlliance.get() != Constants.DrivetrainConstants.alliance) {
-            Constants.DrivetrainConstants.alliance = currentAlliance.get();
+        if (DriverStation.isDSAttached() && currAlliance != Constants.DrivetrainConstants.alliance) {
+            Constants.DrivetrainConstants.alliance = currAlliance;
+            m_robotContainer.onAllianceChange(currAlliance);
         }
     }
 }

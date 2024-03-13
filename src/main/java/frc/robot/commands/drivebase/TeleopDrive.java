@@ -46,21 +46,22 @@ public class TeleopDrive extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        Optional<Alliance> maybeAlliance = DriverStation.getAlliance();
+        // Optional<Alliance> maybeAlliance = DriverStation.getAlliance();
         double xVelocity;
         double yVelocity;
-        if (maybeAlliance.isPresent()) {
-            if (maybeAlliance.get() == Alliance.Blue) {
-                xVelocity = -vX.getAsDouble(); // Math.pow(vX.getAsDouble(), 3);
-                yVelocity = -vY.getAsDouble(); // Math.pow(vY.getAsDouble(), 3);
-            } else {
-                xVelocity = vX.getAsDouble(); // Math.pow(vX.getAsDouble(), 3);
-                yVelocity = vY.getAsDouble(); // Math.pow(vY.getAsDouble(), 3);
-            }
-        } else {
-            xVelocity = vX.getAsDouble();
-            yVelocity = vY.getAsDouble();
-        }
+        // if (maybeAlliance.isPresent()) {
+        //     if (maybeAlliance.get() == Alliance.Blue) {
+        //         xVelocity = -vX.getAsDouble(); // Math.pow(vX.getAsDouble(), 3);
+        //         yVelocity = -vY.getAsDouble(); // Math.pow(vY.getAsDouble(), 3);
+        //     } else {
+        //     }
+        // } else {
+        //     xVelocity = vX.getAsDouble();
+        //     yVelocity = vY.getAsDouble();
+        // }
+        
+        xVelocity = vX.getAsDouble(); // Math.pow(vX.getAsDouble(), 3);
+        yVelocity = vY.getAsDouble(); // Math.pow(vY.getAsDouble(), 3);
         double angVelocity = omega.getAsDouble(); // Math.pow(omega.getAsDouble(), 3);
         // SmartDashboard.putNumber("vX", xVelocity);
         // SmartDashboard.putNumber("vY", yVelocity);
