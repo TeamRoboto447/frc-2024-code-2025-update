@@ -10,11 +10,14 @@ import frc.robot.commands.climber.ClimbTeleop;
 import frc.robot.commands.drivebase.TeleopDrive;
 import frc.robot.commands.intake.TeleopIndex;
 import frc.robot.commands.shooter.TeleopShoot;
+import frc.robot.commands.testing.ServoTestingCommand;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
+import frc.robot.subsystems.ServoTestingSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import swervelib.SwerveDrive;
 
 import java.io.File;
 import java.util.function.DoubleSupplier;
@@ -23,6 +26,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
@@ -45,19 +49,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
     private final boolean driverUsingJoystick = true; // Set to false if using gamepad
-    private final double maxAllowedSpeedRange = 0.75; // percentage of max speed (inputs are multiplied by this number)
-    private final double turnSpeedPercentage = 0.7; // percentage of max turn speed to allow
+    private final double maxAllowedSpeedRange = 0.5; // percentage of max speed (inputs are multiplied by this number)
+    private final double turnSpeedPercentage = 0.5; // percentage of max turn speed to allow
     private final double adjustSpeed = 0.15; // percentage of the max speed to move when using fine adjustments
     private final double adjustTurnSpeed = 0.15; // percentage of the max speed to move when using fine adjustments
 
     private final SendableChooser<Command> autoChooser;
     // The robot's subsystems and commands are defined here...
-    private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-            "swerve"));
-
-    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(drivebase);
-    private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
-    private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
     private final CommandJoystick commandDriverJoystick = new CommandJoystick(
             ControllerConstants.kDriverControllerPort);
@@ -69,6 +67,13 @@ public class RobotContainer {
     private final CommandXboxController commandOperatorController = new CommandXboxController(
             ControllerConstants.kOperatorControllerPort);
     private final XboxController basicOperatorController = commandOperatorController.getHID();
+
+    private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
+            "swerve"), basicDriverJoystick, basicOperatorController);
+
+    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(drivebase);
+    private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+    private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
     private final TeleopIndex indexerCommand = new TeleopIndex(intakeSubsystem, commandOperatorController);
 
@@ -129,79 +134,59 @@ public class RobotContainer {
                 () -> drivebase.getSwerveDrive().getModulePositions(), drivebase);
 
         TeleopDrive closedFieldRel = null;
-        if (driverUsingJoystick) {
-            DoubleSupplier ySpeed = new DoubleSupplier() {
-                @Override
-                public double getAsDouble() {
-                    double speed = 0;
-                    speed = yDirFromPOV(commandDriverJoystick.getHID().getPOV()) * adjustSpeed;
-                    if (speed == 0)
-                        speed = MathUtil.applyDeadband(commandDriverJoystick.getY() * maxAllowedSpeedRange,
-                                ControllerConstants.Y_DEADBAND);
-                    return speed;
+        DoubleSupplier ySpeed = new DoubleSupplier() {
+            @Override
+            public double getAsDouble() {
+                double speed = 0;
+                speed = yDirFromPOV(commandDriverJoystick.getHID().getPOV()) * adjustSpeed;
+                if (speed == 0)
+                    speed = MathUtil.applyDeadband(commandDriverJoystick.getY() * maxAllowedSpeedRange,
+                            ControllerConstants.Y_DEADBAND);
+                return speed;
+            }
+        };
+
+        DoubleSupplier xSpeed = new DoubleSupplier() {
+            @Override
+            public double getAsDouble() {
+                double speed = 0;
+                speed = xDirFromPOV(commandDriverJoystick.getHID().getPOV()) * adjustSpeed;
+                if (speed == 0)
+                    speed = MathUtil.applyDeadband(commandDriverJoystick.getX() * maxAllowedSpeedRange,
+                            ControllerConstants.X_DEADBAND);
+                return speed;
+            }
+        };
+
+        DoubleSupplier turnSpeed = new DoubleSupplier() {
+            @Override
+            public double getAsDouble() {
+                double speed = 0;
+                if (basicDriverJoystick.getRawButton(1)) {
+                    speed = MathUtil.applyDeadband((commandDriverJoystick.getZ() * turnSpeedPercentage),
+                            ControllerConstants.Z_DEADBAND);
+                } else {
+                    if (basicDriverGamepad.getRawButton(4))
+                        speed = adjustTurnSpeed;
+                    if (basicDriverGamepad.getRawButton(3))
+                        speed = -adjustTurnSpeed;
                 }
-            };
+                return speed;
+            }
+        };
 
-            DoubleSupplier xSpeed = new DoubleSupplier() {
-                @Override
-                public double getAsDouble() {
-                    double speed = 0;
-                    speed = xDirFromPOV(commandDriverJoystick.getHID().getPOV()) * adjustSpeed;
-                    if (speed == 0)
-                        speed = MathUtil.applyDeadband(commandDriverJoystick.getX() * maxAllowedSpeedRange,
-                                ControllerConstants.X_DEADBAND);
-                    return speed;
-                }
-            };
-
-            DoubleSupplier turnSpeed = new DoubleSupplier() {
-                @Override
-                public double getAsDouble() {
-                    double speed = 0;
-                    if (basicDriverJoystick.getRawButton(1)) {
-                        speed = MathUtil.applyDeadband((commandDriverJoystick.getZ() * turnSpeedPercentage),
-                                ControllerConstants.Z_DEADBAND);
-                    } else {
-                        if (basicDriverGamepad.getRawButton(4))
-                            speed = adjustTurnSpeed;
-                        if (basicDriverGamepad.getRawButton(3))
-                            speed = -adjustTurnSpeed;
-                    }
-                    return speed;
-                }
-            };
-
-            closedFieldRel = new TeleopDrive(drivebase,
-                    ySpeed,
-                    xSpeed,
-                    turnSpeed,
-                    () -> true);
-        } else {
-            closedFieldRel = new TeleopDrive(drivebase,
-                    () -> MathUtil.applyDeadband(commandDriverGamepad.getLeftY() *
-                            maxAllowedSpeedRange,
-                            ControllerConstants.Y_DEADBAND),
-                    () -> MathUtil.applyDeadband(commandDriverGamepad.getLeftX() *
-                            maxAllowedSpeedRange,
-                            ControllerConstants.X_DEADBAND),
-                    () -> MathUtil.applyDeadband(commandDriverGamepad.getRightX() * turnSpeedPercentage,
-                            ControllerConstants.Z_DEADBAND),
-                    () -> true);
-        }
-
-        // TeleopDrive closedFieldRel = new TeleopDrive(drivebase,
-        // () -> MathUtil.applyDeadband(0,
-        // ControllerConstants.Y_DEADBAND),
-        // () -> MathUtil.applyDeadband(0,
-        // ControllerConstants.X_DEADBAND),
-        // () -> MathUtil.applyDeadband(0,
-        // ControllerConstants.Z_DEADBAND),
-        // () -> true);
+        closedFieldRel = new TeleopDrive(drivebase,
+                ySpeed,
+                xSpeed,
+                turnSpeed);
 
         drivebase.setDefaultCommand(closedFieldRel);
         shooterSubsystem.setDefaultCommand(shooterCommand);
         intakeSubsystem.setDefaultCommand(indexerCommand);
         climberSubsystem.setDefaultCommand(climberCommand);
+        // ServoTestingSubsystem servos = new ServoTestingSubsystem();
+        // servos.setDefaultCommand(new ServoTestingCommand(servos, () ->
+        // this.commandDriverJoystick.getRawAxis(3)));
     }
 
     /**
@@ -219,6 +204,7 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
+        commandOperatorController.leftBumper().onTrue(Autos.aimAtTarget(drivebase, shooterSubsystem));
     }
 
     /**
@@ -236,9 +222,5 @@ public class RobotContainer {
 
     public void setMotorBrake(boolean brake) {
         drivebase.setMotorBrake(brake);
-    }
-
-    public void onAllianceChanged(Alliance currentAlliance) {
-        // poseSubsystem.setAlliance(currentAlliance);
     }
 }

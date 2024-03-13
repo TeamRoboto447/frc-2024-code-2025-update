@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -125,12 +126,12 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
         return Constants.VisionConstants.VISION_MEASUREMENT_STANDARD_DEVIATIONS.times(confidenceMultiplier);
     }
 
-    private String getFomattedPose(Pose2d pose) {
-        return String.format("(%.3f, %.3f) %.2f degrees",
-                pose.getX(),
-                pose.getY(),
-                pose.getRotation().getDegrees());
-    }
+    // private String getFomattedPose(Pose2d pose) {
+    // return String.format("(%.3f, %.3f) %.2f degrees",
+    // pose.getX(),
+    // pose.getY(),
+    // pose.getRotation().getDegrees());
+    // }
 
     public void estimatorChecker(PhotonRunnable estamator) {
         var cameraPose = estamator.grabLatestEstimatedPose();
@@ -138,9 +139,14 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
             // New pose from vision
             var pose2d = cameraPose.estimatedPose.toPose2d();
             // System.out.println("Adding measurement " + getFomattedPose(pose2d));
-            // swerveSubsystem.getSwerveDrive().addVisionMeasurement(pose2d,
-            // cameraPose.timestampSeconds,
-            // confidenceCalculator(cameraPose));
+            if (DriverStation.isDisabled()) {
+                swerveSubsystem.getSwerveDrive().resetOdometry(pose2d);
+            } else {
+                swerveSubsystem.getSwerveDrive().addVisionMeasurement(
+                        pose2d,
+                        cameraPose.timestampSeconds,
+                        confidenceCalculator(cameraPose));
+            }
         }
     }
 }

@@ -4,10 +4,13 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.util.PIDConstants;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -34,9 +37,18 @@ public final class Constants {
     public static final Matter CHASSIS = new Matter(new Translation3d(0, 0, Units.inchesToMeters(6)), ROBOT_MASS);
     public static final double LOOP_TIME = 0.13; // s, 20ms + 110ms sprk max velocity lag
 
+    public static class FieldConstants {
+        public static final double FIELD_LENGTH_METERS = Units.inchesToMeters(651.25);
+        public static final double FIELD_WIDTH_METERS = Units.inchesToMeters(315.5);
+
+        public static final Translation2d BLUE_SPEAKER = new Translation2d(0, 6.0);
+        public static final Translation2d RED_SPEAKER = new Translation2d(17.42, 5.98);
+    }
+
     public static final class DrivetrainConstants {
 
         public static Alliance alliance = Alliance.Blue;
+        public static PIDConstants autonomousDriveAim = new PIDConstants(0.5, 0, 0.015);
     }
 
     public static class ControllerConstants {
@@ -81,7 +93,7 @@ public final class Constants {
     }
 
     public static class VisionConstants {
-        public static boolean USE_VISION = false;
+        public static boolean USE_VISION = true;
         /** Minimum target ambiguity. Targets with higher ambiguity will be discarded */
         public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.2;
         public static final double POSE_AMBIGUITY_SHIFTER = 0.2;
@@ -93,22 +105,24 @@ public final class Constants {
         public static final Transform3d ROBOT_TO_LEFT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(11.25),
                         Units.inchesToMeters(17.75)),
-                new Rotation3d(Math.toRadians(-90), Math.toRadians(-10), Math.toRadians(0)));
+                new Rotation3d(Math.toRadians(0), Math.toRadians(-10), Math.toRadians(-90)));
         // Translation is Forward, Left, Up positive
-        // Rotation is Yaw, Pitch, Roll (ccw positive)
+        // Rotation is Roll, Pitch, Yaw (ccw positive)
         // TODO: Get measurements
-        public static final Transform3d ROBOT_TO_FRONT_CAM = new Transform3d(
-                new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0)),
-                new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
+        // public static final Transform3d ROBOT_TO_FRONT_CAM = new Transform3d(
+        // new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(0),
+        // Units.inchesToMeters(0)),
+        // new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
 
         public static final Transform3d ROBOT_TO_RIGHT_CAM = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-3.25), Units.inchesToMeters(-11.25),
                         Units.inchesToMeters(17.75)),
-                new Rotation3d(Math.toRadians(90), Math.toRadians(-10), Math.toRadians(0)));
+                new Rotation3d(Math.toRadians(0), Math.toRadians(-10), Math.toRadians(90)));
 
-        public static final Transform3d ROBOT_TO_BACK_CAM = new Transform3d(
-                new Translation3d(Units.inchesToMeters(-17.5), Units.inchesToMeters(-8.75), Units.inchesToMeters(9.75)),
-                new Rotation3d(Math.toRadians(180), Math.toRadians(-10), Math.toRadians(0)));
+        // public static final Transform3d ROBOT_TO_BACK_CAM = new Transform3d(
+        // new Translation3d(Units.inchesToMeters(-17.5), Units.inchesToMeters(-8.75),
+        // Units.inchesToMeters(9.75)),
+        // new Rotation3d(Math.toRadians(0), Math.toRadians(-10), Math.toRadians(180)));
 
         /**
          * Standard deviations of model states. Increase these numbers to trust your
@@ -136,10 +150,5 @@ public final class Constants {
                         .1, // x
                         .1, // y
                         .1);
-    }
-
-    public static class FieldConstants {
-        public static final double FIELD_LENGTH_METERS = Units.inchesToMeters(651.25);
-        public static final double FIELD_WIDTH_METERS = Units.inchesToMeters(315.5);
     }
 }

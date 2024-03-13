@@ -6,12 +6,9 @@ package frc.robot;
 
 import java.util.Optional;
 
-import com.ctre.phoenix6.Orchestra;
-
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -67,7 +64,7 @@ public class Robot extends TimedRobot {
         // robot's periodic
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run();
-        if(m_gcTimer.advanceIfElapsed(5)) {
+        if (m_gcTimer.advanceIfElapsed(5)) {
             System.gc();
         }
     }
@@ -148,7 +145,6 @@ public class Robot extends TimedRobot {
 
         // If we have data, and have a new alliance from last time
         if (DriverStation.isDSAttached() && currentAlliance.get() != Constants.DrivetrainConstants.alliance) {
-            m_robotContainer.onAllianceChanged(currentAlliance.get());
             Constants.DrivetrainConstants.alliance = currentAlliance.get();
         }
     }

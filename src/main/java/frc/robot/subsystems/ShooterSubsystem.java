@@ -20,7 +20,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final RelativeEncoder aimEncoder;
     private final PIDController aimPidController;
 
-    private final double teleopMinAngle = 45; // Software limit
+    private final double teleopMinAngle = 40.25; // Software limit
     private final double outputMin = 40; // Aim angle min
     private final double outputMax = 58; // Aim angle max
     private boolean hasZerodEncoder = false;
@@ -71,7 +71,7 @@ public class ShooterSubsystem extends SubsystemBase {
             this.aimMotor.set(0);
             return;
         }
-        this.aimMotor.set(hasZerodEncoder ? speed : Math.max(speed*3, 0));
+        this.aimMotor.set(hasZerodEncoder ? speed : Math.max(speed * 3, 0));
     }
 
     public double mapNormalizedToAngle(double normalized) {
@@ -96,8 +96,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if(!this.hasZerodEncoder) {
-            if(this.aimUpperLimitSwitch.isPressed()) {
+        if (!this.hasZerodEncoder) {
+            if (this.aimUpperLimitSwitch.isPressed()) {
                 this.hasZerodEncoder = true;
                 this.aimEncoder.setPosition(1.8092646);
             }

@@ -102,6 +102,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     private void setPeriods(CANSparkMax sparkMax) {
+        sparkMax.setCANTimeout(500);
         sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 500);
         sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
         sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);

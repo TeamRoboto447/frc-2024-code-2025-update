@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import java.io.File;
+import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -16,11 +17,15 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
-import swervelib.parser.SwerveControllerConfiguration;
+// import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
@@ -31,11 +36,15 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
  */
 public class SwerveSubsystem extends SubsystemBase {
     private final SwerveDrive swerveDrive;
-    public double maximumSpeed = Units.feetToMeters(14.5); //14.5 is full speed
+    private final Joystick dJoystick;
+    private final XboxController oGamepad;
+    public double maximumSpeed = Units.feetToMeters(14.5); // 14.5 is full speed
 
-    public SwerveSubsystem(File directory) {
+    public SwerveSubsystem(File directory, Joystick driver, XboxController operator) {
         // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary
         // objects being created.
+        this.dJoystick = driver;
+        this.oGamepad = operator;
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
         try {
             swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed);
@@ -63,7 +72,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 this::setChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your
                                                  // Constants class
-                        new PIDConstants(5.0, 0.0, 0.0),
+                        new PIDConstants(6, 0.0, 0.25),
                         // Translation PID constants
                         new PIDConstants(swerveDrive.swerveController.config.headingPIDF.p,
                                 swerveDrive.swerveController.config.headingPIDF.i,
@@ -98,6 +107,12 @@ public class SwerveSubsystem extends SubsystemBase {
     public Command getAutonomousCommand(String pathName, boolean setOdomToStart) {
         // Load the path you want to follow using its name in the GUI
         PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+        Optional<Alliance> optional = DriverStation.getAlliance();
+        if (optional.isPresent()) {
+            Alliance alliance = optional.get();
+            if (alliance == Alliance.Red)
+                path.flipPath();
+        }
 
         if (setOdomToStart) {
             resetOdometry(new Pose2d(path.getPoint(0).position, getHeading()));
@@ -108,15 +123,16 @@ public class SwerveSubsystem extends SubsystemBase {
         return AutoBuilder.followPath(path);
     }
 
-    /**
-     * Construct the swerve drive.
-     *
-     * @param driveCfg      SwerveDriveConfiguration for the swerve.
-     * @param controllerCfg Swerve Controller.
-     */
-    public SwerveSubsystem(SwerveDriveConfiguration driveCfg, SwerveControllerConfiguration controllerCfg) {
-        swerveDrive = new SwerveDrive(driveCfg, controllerCfg, maximumSpeed);
-    }
+    // /**
+    // * Construct the swerve drive.
+    // *
+    // * @param driveCfg SwerveDriveConfiguration for the swerve.
+    // * @param controllerCfg Swerve Controller.
+    // */
+    // public SwerveSubsystem(SwerveDriveConfiguration driveCfg,
+    // SwerveControllerConfiguration controllerCfg) {
+    // swerveDrive = new SwerveDrive(driveCfg, controllerCfg, maximumSpeed);
+    // }
 
     /**
      * The primary method for controlling the drivebase. Takes a
@@ -177,6 +193,30 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public void resetOdometry(Pose2d initialHolonomicPose) {
         swerveDrive.resetOdometry(initialHolonomicPose);
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("gyro for pathplanner", this.getPose().getRotation().getDegrees());
+        boolean reset = false;
+        if (this.oGamepad.getStartButton())
+            reset = true;
+        if (this.dJoystick.getRawButton(7))
+            reset = true;
+        if (this.dJoystick.getRawButton(8))
+            reset = true;
+        if (this.dJoystick.getRawButton(9))
+            reset = true;
+        if (this.dJoystick.getRawButton(10))
+            reset = true;
+        if (this.dJoystick.getRawButton(11))
+            reset = true;
+        if (this.dJoystick.getRawButton(12))
+            reset = true;
+        if (reset) {
+            reset = false;
+            this.swerveDrive.zeroGyro();
+        }
     }
 
     /**
