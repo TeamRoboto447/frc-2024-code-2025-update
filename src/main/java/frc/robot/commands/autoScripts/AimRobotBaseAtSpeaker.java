@@ -66,7 +66,7 @@ public class AimRobotBaseAtSpeaker extends Command {
             done = true;
         }
         this.swerve.drive(new Translation2d(0, 0),
-                rotationSpeed * this.swerve.getSwerveController().config.maxAngularVelocity, true);
+                rotationSpeed * (this.swerve.getSwerveController().config.maxAngularVelocity * 0.5), true);
     }
 
     // Called once the command ends or is interrupted.
