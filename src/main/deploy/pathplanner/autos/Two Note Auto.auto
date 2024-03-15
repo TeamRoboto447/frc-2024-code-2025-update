@@ -6,33 +6,21 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "First Move"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
+            "name": "Aim At Speaker"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Second Move"
+            "pathName": "ThreeNote First Move"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Third Move"
+            "name": "Aim At Speaker"
           }
         }
       ]

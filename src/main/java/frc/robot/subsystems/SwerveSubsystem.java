@@ -16,6 +16,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -23,6 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.FieldConstants;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 // import swervelib.parser.SwerveControllerConfiguration;
@@ -59,6 +65,7 @@ public class SwerveSubsystem extends SubsystemBase {
                                                  // via angle.
 
         setupPathPlanner();
+        ntInit();
     }
 
     /**
@@ -95,6 +102,18 @@ public class SwerveSubsystem extends SubsystemBase {
                 },
                 this // Reference to this subsystem to set requirements
         );
+    }
+
+    public Measure<Distance> distanceToTarget(Translation2d target) {
+        Translation2d robotPos = this.swerveDrive.getPose().getTranslation();
+        double measured = robotPos.getDistance(target);
+        return edu.wpi.first.units.Units.Meters.of(measured);
+    }
+
+    public Rotation2d rotationToTarget(Translation2d target) {
+        Translation2d robotPos = this.swerveDrive.getPose().getTranslation();
+        double targetRadians = Math.atan2(target.getY() - robotPos.getY(), target.getX() - robotPos.getX());
+        return new Rotation2d(targetRadians);
     }
 
     /**
@@ -195,12 +214,20 @@ public class SwerveSubsystem extends SubsystemBase {
         swerveDrive.resetOdometry(initialHolonomicPose);
     }
 
+    private NetworkTable pidTuningPVs;
+    private NetworkTableInstance table;
+    private NetworkTableEntry distFromTarget;
+    private void ntInit() {
+        table = NetworkTableInstance.getDefault();
+        pidTuningPVs = table.getTable("pidTuningPVs");
+        distFromTarget = pidTuningPVs.getEntry("distFromTarget");
+    }
+
     @Override
     public void periodic() {
+        distFromTarget.setDouble(this.distanceToTarget(FieldConstants.RED_SPEAKER).in(edu.wpi.first.units.Units.Meters));
         SmartDashboard.putNumber("gyro for pathplanner", this.getPose().getRotation().getDegrees());
         boolean reset = false;
-        if (this.oGamepad.getStartButton())
-            reset = true;
         if (this.dJoystick.getRawButton(7))
             reset = true;
         if (this.dJoystick.getRawButton(8))

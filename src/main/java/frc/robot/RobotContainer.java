@@ -122,11 +122,15 @@ public class RobotContainer {
     public RobotContainer() {
         // Configure Named Commands
         NamedCommands.registerCommand("Test Command", Autos.testNamedCommand());
+        NamedCommands.registerCommand("Aim At Speaker", Autos.aimAtTarget(drivebase, shooterSubsystem));
+        NamedCommands.registerCommand("Keep Shooter Aimed (Endless)", Autos.keepShooterAimedEndless(drivebase, shooterSubsystem));
+        NamedCommands.registerCommand("Shoot", Autos.shoot(drivebase, shooterSubsystem, intakeSubsystem));
+        NamedCommands.registerCommand("Initial Shoot", Autos.shootAtStart(drivebase, shooterSubsystem, intakeSubsystem));
 
         // Configure the trigger bindings
         configureBindings();
 
-        autoChooser = AutoBuilder.buildAutoChooser("Test Auto");
+        autoChooser = AutoBuilder.buildAutoChooser("One Note Auto Source Side");
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 

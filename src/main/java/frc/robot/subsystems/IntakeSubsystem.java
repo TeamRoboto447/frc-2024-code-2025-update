@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // import edu.wpi.first.math.controller.PIDController;
 // import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -14,10 +16,16 @@ import com.revrobotics.SparkLimitSwitch.Type;
 import frc.robot.Constants.IntakeConstants;
 
 public class IntakeSubsystem extends SubsystemBase {
+    public enum IntakeStatus {
+        LOWERED,
+        IDLE,
+        RAISED
+    }
+
     // private final SwerveSubsystem driveSystem;
-    // private final PIDController leftController;
-    // private final PIDController frontController;
-    // private final PIDController rightController;
+    private final PIDController liftCtrlOne = new PIDController(0.05, 0, 0);
+    private final PIDController liftCtrlTwo = new PIDController(0.05, 0, 0);
+    private final PIDController liftCtrlThree = new PIDController(0.05, 0, 0);
 
     private final CANSparkMax left;
     private final CANSparkMax front;
@@ -25,41 +33,29 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CANSparkMax loader;
 
     private final CANSparkMax lifterOne;
-    // private final SparkLimitSwitch downLimitOne;
-    private final SparkLimitSwitch upLimitOne;
-    private final RelativeEncoder liftEncoderOne;
+    private final SparkLimitSwitch upLimitLeft;
+    private final RelativeEncoder liftEncoderLeft;
     private final CANSparkMax lifterTwo;
-    // private final SparkLimitSwitch downLimitTwo;
-    private final SparkLimitSwitch upLimitTwo;
-    private final RelativeEncoder liftEncoderTwo;
+    private final SparkLimitSwitch upLimitMid;
+    private final RelativeEncoder leftEncoderMid;
     private final CANSparkMax lifterThree;
-    // private final SparkLimitSwitch downLimitThree;
     private final SparkLimitSwitch upLimitThree;
-    private final RelativeEncoder liftEncoderThree;
+    private final RelativeEncoder liftEncoderRight;
 
-    // private boolean shouldbeLifted = false;
-    // private boolean liftManualControl = false;
+    private IntakeStatus requestedLiftStatus = IntakeStatus.RAISED;
+    private boolean liftManualControl = true;
 
-    private boolean oneHasResetSinceSwitch = false;
-    private boolean twoHasResetSinceSwitch = false;
-    private boolean threeHasResetSinceSwitch = false;
+    private boolean leftHasResetSinceSwitch = false;
+    private boolean midHasResetSinceSwitch = false;
+    private boolean rightHasResetSinceSwitch = false;
+
+    private final double liftMin = -450;
+    private boolean zerodMotors = false;
+    private boolean zerodLeftLift = false;
+    private boolean zerodMidLift = false;
+    private boolean zerodRightLift = false;
 
     public IntakeSubsystem(SwerveSubsystem driveSystem) {
-        // this.driveSystem = driveSystem;
-        // this.leftController = new PIDController(
-        // IntakeConstants.leftControllerVals[0],
-        // IntakeConstants.leftControllerVals[1],
-        // IntakeConstants.leftControllerVals[2]);
-
-        // this.frontController = new PIDController(
-        // IntakeConstants.frontControllerVals[0],
-        // IntakeConstants.frontControllerVals[1],
-        // IntakeConstants.frontControllerVals[2]);
-        // this.rightController = new PIDController(
-        // IntakeConstants.rightControllerVals[0],
-        // IntakeConstants.rightControllerVals[1],
-        // IntakeConstants.rightControllerVals[2]);
-
         this.left = new CANSparkMax(IntakeConstants.leftMotorId, MotorType.kBrushless);
         this.left.setInverted(false);
         this.setPeriods(this.left);
@@ -77,27 +73,33 @@ public class IntakeSubsystem extends SubsystemBase {
         this.lifterOne = new CANSparkMax(IntakeConstants.lifterOne, MotorType.kBrushless);
         this.lifterOne.setInverted(false);
         this.lifterOne.setIdleMode(IdleMode.kBrake);
+        this.lifterOne.setSmartCurrentLimit(20);
         this.setPeriods(this.lifterOne);
+
         this.lifterTwo = new CANSparkMax(IntakeConstants.lifterTwo, MotorType.kBrushless);
         this.lifterTwo.setInverted(false);
-        this.lifterOne.setIdleMode(IdleMode.kBrake);
+        this.lifterTwo.setIdleMode(IdleMode.kBrake);
+        this.lifterTwo.setSmartCurrentLimit(20);
         this.setPeriods(this.lifterTwo);
+
         this.lifterThree = new CANSparkMax(IntakeConstants.lifterThree, MotorType.kBrushless);
         this.lifterThree.setInverted(false);
         this.lifterOne.setIdleMode(IdleMode.kBrake);
+        this.lifterThree.setSmartCurrentLimit(20);
         this.setPeriods(this.lifterThree);
 
-        this.upLimitOne = lifterOne.getForwardLimitSwitch(Type.kNormallyOpen);
-        this.upLimitTwo = lifterTwo.getForwardLimitSwitch(Type.kNormallyOpen);
+        this.upLimitLeft = lifterOne.getForwardLimitSwitch(Type.kNormallyOpen);
+        this.upLimitMid = lifterTwo.getForwardLimitSwitch(Type.kNormallyOpen);
         this.upLimitThree = lifterThree.getForwardLimitSwitch(Type.kNormallyOpen);
 
         // this.downLimitOne = lifterOne.getReverseLimitSwitch(Type.kNormallyOpen);
         // this.downLimitTwo = lifterTwo.getReverseLimitSwitch(Type.kNormallyOpen);
         // this.downLimitThree = lifterThree.getReverseLimitSwitch(Type.kNormallyOpen);
 
-        this.liftEncoderOne = lifterOne.getEncoder();
-        this.liftEncoderTwo = lifterTwo.getEncoder();
-        this.liftEncoderThree = lifterThree.getEncoder();
+        this.liftEncoderLeft = lifterOne.getEncoder();
+        this.leftEncoderMid = lifterTwo.getEncoder();
+        this.liftEncoderRight = lifterThree.getEncoder();
+
     }
 
     private void setPeriods(CANSparkMax sparkMax) {
@@ -112,11 +114,11 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public boolean oneAtUpperLimit() {
-        return this.upLimitOne.isPressed();
+        return this.upLimitLeft.isPressed();
     }
 
     public boolean twoAtUpperLimit() {
-        return this.upLimitTwo.isPressed();
+        return this.upLimitMid.isPressed();
     }
 
     public boolean threeAtUpperLimit() {
@@ -128,15 +130,15 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public boolean oneAtLowerLimit() {
-        return this.liftEncoderOne.getPosition() <= -450;
+        return this.liftEncoderLeft.getPosition() <= this.liftMin;
     }
 
     public boolean twoAtLowerLimit() {
-        return this.liftEncoderTwo.getPosition() <= -450;
+        return this.leftEncoderMid.getPosition() <= this.liftMin;
     }
 
     public boolean threeAtLowerLimit() {
-        return this.liftEncoderThree.getPosition() <= -450;
+        return this.liftEncoderRight.getPosition() <= this.liftMin;
     }
 
     public boolean allAtLowerLimit() {
@@ -145,21 +147,15 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void liftManual(double speed) {
         if (Math.abs(speed) > 0.05) {
-            speed /= 2;
-            // this.liftManualControl = true;
+            this.liftManualControl = true;
             moveLifter(speed);
         } else {
             // this.liftManualControl = false;
+            // this.liftCtrlOne.reset();
+            // this.liftCtrlTwo.reset();
+            // this.liftCtrlThree.reset();
             moveLifter(0);
         }
-    }
-
-    public void raise() {
-        // this.shouldbeLifted = true;
-    }
-
-    public void lower() {
-        // this.shouldbeLifted = false;
     }
 
     public void load(double speed) {
@@ -167,11 +163,15 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void raiseIntake() {
-        // this.shouldbeLifted = true;
+        this.requestedLiftStatus = IntakeStatus.RAISED;
+    }
+
+    public void idleIntake() {
+        this.requestedLiftStatus = IntakeStatus.IDLE;
     }
 
     public void lowerIntake() {
-        // this.shouldbeLifted = false;
+        this.requestedLiftStatus = IntakeStatus.LOWERED;
     }
 
     public void setLoaderSpeed(double speed) {
@@ -186,52 +186,115 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // runLifter();
+        runLifter();
         // runIntake();
     }
 
     private void monitorAndCorrectAlignment(double movementSpeed) {
-        if (this.upLimitOne.isPressed() && !this.oneHasResetSinceSwitch) {
-            this.liftEncoderOne.setPosition(0);
-            this.oneHasResetSinceSwitch = true;
-        } else if (!this.upLimitOne.isPressed() && this.oneHasResetSinceSwitch) {
-            this.oneHasResetSinceSwitch = false;
+        if (this.zerodMotors)
+            return;
+        if (this.upLimitMid.isPressed() && !this.leftHasResetSinceSwitch) {
+            this.liftEncoderLeft.setPosition(0);
+            this.zerodLeftLift = true;
+            this.leftHasResetSinceSwitch = true;
+        } else if (!this.upLimitMid.isPressed() && this.leftHasResetSinceSwitch) {
+            this.leftHasResetSinceSwitch = false;
         }
 
-        if (this.upLimitTwo.isPressed() && !this.twoHasResetSinceSwitch) {
-            this.liftEncoderTwo.setPosition(0);
-            this.twoHasResetSinceSwitch = true;
-        } else if (!this.upLimitTwo.isPressed() && this.twoHasResetSinceSwitch) {
-            this.twoHasResetSinceSwitch = false;
+        if (this.upLimitMid.isPressed() && !this.midHasResetSinceSwitch) {
+            this.leftEncoderMid.setPosition(0);
+            this.zerodMidLift = true;
+            this.midHasResetSinceSwitch = true;
+        } else if (!this.upLimitMid.isPressed() && this.midHasResetSinceSwitch) {
+            this.midHasResetSinceSwitch = false;
         }
 
-        if (this.upLimitThree.isPressed() && !this.threeHasResetSinceSwitch) {
-            this.liftEncoderThree.setPosition(0);
-            this.threeHasResetSinceSwitch = true;
-        } else if (!this.upLimitTwo.isPressed() && this.threeHasResetSinceSwitch) {
-            this.threeHasResetSinceSwitch = false;
+        if (this.upLimitMid.isPressed() && !this.rightHasResetSinceSwitch) {
+            this.liftEncoderRight.setPosition(0);
+            this.zerodRightLift = true;
+            this.rightHasResetSinceSwitch = true;
+        } else if (!this.upLimitMid.isPressed() && this.rightHasResetSinceSwitch) {
+            this.rightHasResetSinceSwitch = false;
         }
+
+        this.zerodMotors = this.zerodLeftLift && this.zerodMidLift && zerodRightLift;
     }
 
     private void moveLifter(double speed) {
         monitorAndCorrectAlignment(speed);
-        if (speed > 0 && allAtUpperLimit())
+        if (speed > 0 && oneAtUpperLimit())
             speed = 0;
-        else if (speed < 0 && allAtLowerLimit())
+        if (speed < 0 && oneAtLowerLimit())
             speed = 0;
-
-        this.lifterOne.set(this.oneAtUpperLimit() ? 0 : this.oneAtLowerLimit() ? 0 : speed);
-        this.lifterTwo.set(this.twoAtUpperLimit() ? 0 : this.twoAtLowerLimit() ? 0 : speed);
-        this.lifterThree.set(this.threeAtUpperLimit() ? 0 : this.threeAtLowerLimit() ? 0 : speed);
+        moveLifterOne(speed);
+        moveLifterTwo(speed);
+        moveLifterThree(speed);
     }
 
-    // private void runLifter() {
-    // if (!liftManualControl) {
-    // if (shouldbeLifted) {
-    // } else {
-    // }
-    // }
-    // }
+    private void moveLifterOne(double speed) {
+        if (speed < 0 && !this.zerodLeftLift)
+            speed = 0;
+        this.lifterOne.set(this.oneAtLowerLimit() && speed < 0 ? 0 : speed);
+    }
+
+    private void moveLifterTwo(double speed) {
+        if (speed < 0 && !this.zerodMidLift)
+            speed = 0;
+        this.lifterTwo.set(this.twoAtLowerLimit() && speed < 0 ? 0 : speed);
+    }
+
+    private void moveLifterThree(double speed) {
+        if (speed < 0 && !this.zerodRightLift)
+            speed = 0;
+        this.lifterThree.set(this.threeAtLowerLimit() && speed < 0 ? 0 : speed);
+    }
+
+    // private double getSpeed(double reading, double setpoint, double margin, double maxSpeed) {
+    //     if (Math.abs(setpoint - reading) <= margin)
+    //         return 0;
+    //     if (reading < setpoint)
+    //         return maxSpeed;
+    //     if (reading > setpoint)
+    //         return -maxSpeed;
+    //     return 0;
+    // };
+
+    private void runLifter() {
+        double setpoint = 0;
+        if (!liftManualControl) {
+            switch (requestedLiftStatus) {
+                case RAISED:
+                    setpoint = 0;
+                    break;
+
+                case IDLE:
+                    setpoint = this.liftMin / 2;
+                    break;
+
+                case LOWERED:
+                    setpoint = this.liftMin;
+                    break;
+            }
+            double maxSpeed = 0.125;
+            if (this.zerodMotors) {
+                double measuredOne = this.liftEncoderLeft.getPosition(); // Control Master, slave measurements will include error from master to keep in sync
+                double measuredTwo = this.leftEncoderMid.getPosition(); // Slave 1
+                measuredTwo += (measuredTwo - measuredOne); // Add error to measurement to keep them more in sync
+                double measuredThree = this.liftEncoderRight.getPosition(); // Slave 2
+                measuredThree += (measuredThree - measuredOne); // Add error to measurement to keep them more in sync   
+                // moveLifterOne(getSpeed(measuredOne, setpoint, 10, maxSpeed));
+                // moveLifterTwo(getSpeed(measuredTwo, setpoint, 10, maxSpeed));
+                // moveLifterThree(getSpeed(measuredThree, setpoint, 10, maxSpeed));
+                moveLifterOne(this.liftCtrlOne.calculate(measuredOne, setpoint));
+                moveLifterTwo(this.liftCtrlTwo.calculate(measuredTwo, setpoint));
+                moveLifterThree(this.liftCtrlThree.calculate(measuredThree, setpoint));
+                SmartDashboard.putNumberArray("Lift: Measured, Setpoint",
+                        new double[] { measuredOne, measuredTwo, measuredThree, setpoint });
+            } else {
+                moveLifter(maxSpeed);
+            }
+        }
+    }
 
     // private void runIntake() {
     // if (atUpperLimit()) {

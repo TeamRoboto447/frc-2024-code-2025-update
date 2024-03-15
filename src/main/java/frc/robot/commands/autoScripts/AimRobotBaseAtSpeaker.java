@@ -9,6 +9,7 @@ import java.util.Optional;
 import com.pathplanner.lib.util.PIDConstants;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -47,9 +48,9 @@ public class AimRobotBaseAtSpeaker extends Command {
         if (maybeAlliance.isPresent()) {
             target = maybeAlliance.get() == Alliance.Blue ? FieldConstants.BLUE_SPEAKER : FieldConstants.RED_SPEAKER;
         }
-        Translation2d robotPos = swerve.getSwerveDrive().getPose().getTranslation();
-        double targetRadians = Math.atan2(target.getY() - robotPos.getY(), target.getX() - robotPos.getX());
-        // double angleDegrees = Math.toDegrees(angleRadians);
+        Rotation2d rotToTarget = this.swerve.rotationToTarget(target);
+        double targetRadians = rotToTarget.getRadians();
+
         double curRadians = this.swerve.getPose().getRotation().getRadians();
         double rotationSpeed = -this.headingControl.calculate(curRadians,
                 targetRadians);
@@ -66,7 +67,7 @@ public class AimRobotBaseAtSpeaker extends Command {
             done = true;
         }
         this.swerve.drive(new Translation2d(0, 0),
-                rotationSpeed * (this.swerve.getSwerveController().config.maxAngularVelocity * 0.5), true);
+                rotationSpeed > 1 ? 1 : rotationSpeed < -1 ? -1 : rotationSpeed * (this.swerve.getSwerveController().config.maxAngularVelocity), true);
     }
 
     // Called once the command ends or is interrupted.

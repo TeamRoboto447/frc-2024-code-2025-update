@@ -8,6 +8,9 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkLimitSwitch.Type;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
@@ -42,17 +45,28 @@ public class ShooterSubsystem extends SubsystemBase {
         this.aimPidController = new PIDController(ShooterConstants.aimControllerVals[0],
                 ShooterConstants.aimControllerVals[1], ShooterConstants.aimControllerVals[2]);
         this.aimUpperLimitSwitch = this.aimMotor.getForwardLimitSwitch(Type.kNormallyOpen);
+
+        ntInit();
+    }
+
+    private NetworkTable pidTuningPVs;
+    private NetworkTableInstance table;
+    private NetworkTableEntry angleOfShooter;
+    private void ntInit() {
+        table = NetworkTableInstance.getDefault();
+        pidTuningPVs = table.getTable("pidTuningPVs");
+        angleOfShooter = pidTuningPVs.getEntry("angleOfShooter");
     }
 
     public void manualAim(double speed) {
         moveAimMotor(speed);
     }
 
-    public void autoAim() {
-        autoAim(49);
+    public boolean autoAim() {
+        return autoAim(49);
     }
 
-    public void autoAim(double targetAngle) {
+    public boolean autoAim(double targetAngle) {
         if (!hasZerodEncoder) {
             moveAimMotor(1);
         } else {
@@ -61,8 +75,9 @@ public class ShooterSubsystem extends SubsystemBase {
             if (Math.abs(targetAngle - getAngle()) <= giveOrTake)
                 aimSpeed = 0;
             moveAimMotor(Math.min(aimSpeed, 0.4));
-
+            if(aimSpeed == 0) return true;
         }
+        return false;
     }
 
     public void moveAimMotor(double speed) {
@@ -86,6 +101,10 @@ public class ShooterSubsystem extends SubsystemBase {
         this.rightMotor.set(mainSpeed);
     }
 
+    public double getNeededAngleFromDistance(double distance) {
+        return (-9.099587158111914 * distance) + 81.14590095188204; // TODO: move numbers to constants
+    }
+
     private double getAngle() {
         double inputMin = 0; // min encoder position
         double inputMax = 1.8092646; // max encoder value
@@ -102,6 +121,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 this.aimEncoder.setPosition(1.8092646);
             }
         }
+        this.angleOfShooter.setDouble(this.getAngle());
     }
 
 }
