@@ -226,7 +226,6 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         distFromTarget.setDouble(this.distanceToTarget(FieldConstants.RED_SPEAKER).in(edu.wpi.first.units.Units.Meters));
-        SmartDashboard.putNumber("gyro for pathplanner", this.getPose().getRotation().getDegrees());
         boolean reset = false;
         if (this.dJoystick.getRawButton(7))
             reset = true;

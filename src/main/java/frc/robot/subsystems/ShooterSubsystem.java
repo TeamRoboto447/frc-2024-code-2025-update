@@ -11,7 +11,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 
@@ -102,7 +101,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public double getNeededAngleFromDistance(double distance) {
-        return (-9.099587158111914 * distance) + 81.14590095188204; // TODO: move numbers to constants
+        double calculated = (-3.054298939809341 * distance) + 55.40461859090529;
+        return calculated > this.outputMax ? this.outputMax : calculated < this.outputMin ? this.outputMin : calculated; // TODO: move numbers to constants
     }
 
     private double getAngle() {

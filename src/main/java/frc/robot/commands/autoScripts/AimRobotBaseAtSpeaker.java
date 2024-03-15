@@ -38,6 +38,8 @@ public class AimRobotBaseAtSpeaker extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
+        this.done = false;
+        this.avgErr.reset();
     }
 
     // Called every time the scheduler runs while the command is scheduled.

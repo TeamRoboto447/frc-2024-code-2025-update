@@ -48,7 +48,7 @@ public final class Constants {
     public static final class DrivetrainConstants {
 
         public static Alliance alliance = Alliance.Blue;
-        public static PIDConstants autonomousDriveAim = new PIDConstants(0.25, 0, 0.015);
+        public static PIDConstants autonomousDriveAim = new PIDConstants(0.4, 0, 0.02);
     }
 
     public static class ControllerConstants {
