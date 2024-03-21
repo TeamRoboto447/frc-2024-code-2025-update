@@ -78,6 +78,10 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public boolean autoAim(double targetAngle) {
+        if(targetAngle == -1) {
+            System.out.println("Warning: -1 is not a valid auto-aim value");
+            return true;
+        }
         if (!hasZerodEncoder) {
             moveAimMotor(0.2);
         } else {
@@ -120,12 +124,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
     double aimEncoderTop = 1.6223723883;
 
-    private double getAngle() {
+    public double getAngle() {
         double inputMin = 0; // min encoder position
         double inputMax = aimEncoderTop; // max encoder value
         double reading = this.aimEncoder.getPosition();
         double normalized = (reading - inputMin) / (inputMax - inputMin);
-        return mapNormalizedToAngle(normalized);
+        return this.hasZerodEncoder ? mapNormalizedToAngle(normalized) : -1;
     }
     
     private double getRawPosition() {

@@ -14,7 +14,7 @@ import frc.robot.commands.misc.AimRobotBaseAtSpeaker;
 import frc.robot.commands.misc.AimShooterAtTarget;
 import frc.robot.commands.misc.AimShooterAtTargetEndless;
 import frc.robot.commands.shooter.Shoot;
-import frc.robot.commands.shooter.ShootAt49Point9;
+import frc.robot.commands.shooter.ShootAtCurrPosition;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -64,9 +64,9 @@ public final class Autos {
      * @param intake The intake subsystem, we are directly controlling it, so this command will cancel other commands that control it
      * @return A command object, in our case usually used to create named commands
      */
-    public static Command shootAtStart(SwerveSubsystem swerve, ShooterSubsystem shooter, IntakeSubsystem intake) {
+    public static Command shootAtStart(ShooterSubsystem shooter, IntakeSubsystem intake) {
         return new ParallelCommandGroup(
-            new ShootAt49Point9(shooter, swerve, intake)
+            new ShootAtCurrPosition(shooter, intake)
         );
     }
 

@@ -124,7 +124,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Aim At Speaker", Autos.aimAtTarget(drivebase, shooterSubsystem));
         NamedCommands.registerCommand("Keep Shooter Aimed (Endless)", Autos.keepShooterAimedEndless(drivebase, shooterSubsystem));
         NamedCommands.registerCommand("Shoot", Autos.shoot(drivebase, shooterSubsystem, intakeSubsystem));
-        NamedCommands.registerCommand("Initial Shoot", Autos.shootAtStart(drivebase, shooterSubsystem, intakeSubsystem));
+        NamedCommands.registerCommand("Initial Shoot", Autos.shootAtStart(shooterSubsystem, intakeSubsystem));
         NamedCommands.registerCommand("Lower Intake", Autos.lowerIntake(intakeSubsystem));
         NamedCommands.registerCommand("Run Intake", Autos.runIntake(intakeSubsystem));
         NamedCommands.registerCommand("Raise Intake", Autos.raiseIntake(intakeSubsystem));

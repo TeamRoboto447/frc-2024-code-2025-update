@@ -55,9 +55,9 @@ public final class Constants {
         public static final int kDriverControllerPort = 0;
         public static final int kOperatorControllerPort = 1;
 
-        public static final double X_DEADBAND = 0.1;
-        public static final double Y_DEADBAND = 0.1;
-        public static final double Z_DEADBAND = 0.2;
+        public static final double X_DEADBAND = 0.2;
+        public static final double Y_DEADBAND = 0.2;
+        public static final double Z_DEADBAND = 0.3;
     }
 
     public static class ShooterConstants {

@@ -140,6 +140,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        SmartDashboard.putString("Lift: Requested State", this.requestedLiftStatus.name());
+        SmartDashboard.putString("Lift: Current State", getState().name());
         runLifter();
     }
 
@@ -225,9 +227,6 @@ public class IntakeSubsystem extends SubsystemBase {
                     atTarget = (error < liftPosMargin);
                 double speed = atTarget ? 0 : (setpoint > pos || setpoint == 0) ? maxSpeed : -maxSpeed;
                 speed = error < 10 ? speed * 0.25 : speed; // Slow it down if close
-                SmartDashboard.putNumberArray("Lift: Pos, Speed, Setpoint", new Double[]{this.liftEncoderMid.getPosition(), speed, setpoint});
-                SmartDashboard.putString("Lift: Requested State", this.requestedLiftStatus.name());
-                SmartDashboard.putString("Lift: Current State", getState().name());
                 moveLifter(speed);
             } else {
                 moveLifter(maxSpeed);
