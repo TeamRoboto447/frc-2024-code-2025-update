@@ -41,7 +41,7 @@ public class AimShooterAtTarget extends Command {
   @Override
   public void execute() {
 
-    Translation2d target = new Translation2d(0, 0);
+    Translation2d target = FieldConstants.BLUE_SPEAKER;
     Optional<Alliance> maybeAlliance = DriverStation.getAlliance();
     if (maybeAlliance.isPresent()) {
       target = maybeAlliance.get() == Alliance.Blue ? FieldConstants.BLUE_SPEAKER

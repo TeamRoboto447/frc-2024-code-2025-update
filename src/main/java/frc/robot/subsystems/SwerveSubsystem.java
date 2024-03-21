@@ -51,7 +51,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // objects being created.
         this.dJoystick = driver;
         this.oGamepad = operator;
-        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
+        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.LOW;
         try {
             swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed);
             // Alternative method if you don't want to supply the conversion factor via JSON
@@ -217,15 +217,24 @@ public class SwerveSubsystem extends SubsystemBase {
     private NetworkTable pidTuningPVs;
     private NetworkTableInstance table;
     private NetworkTableEntry distFromTarget;
+    private NetworkTableEntry withinRange;
     private void ntInit() {
         table = NetworkTableInstance.getDefault();
         pidTuningPVs = table.getTable("pidTuningPVs");
         distFromTarget = pidTuningPVs.getEntry("distFromTarget");
+        withinRange = pidTuningPVs.getEntry("Within Reliable Range");
     }
 
     @Override
     public void periodic() {
-        distFromTarget.setDouble(this.distanceToTarget(FieldConstants.RED_SPEAKER).in(edu.wpi.first.units.Units.Meters));
+        Translation2d target = FieldConstants.BLUE_SPEAKER;
+        Optional<Alliance> maybeAlliance = DriverStation.getAlliance();
+        if (maybeAlliance.isPresent()) {
+            target = maybeAlliance.get() == Alliance.Blue ? FieldConstants.BLUE_SPEAKER : FieldConstants.RED_SPEAKER;
+        }
+        double distance = this.distanceToTarget(target).in(edu.wpi.first.units.Units.Meters);
+        distFromTarget.setDouble(distance);
+        withinRange.setBoolean(distance < 2.75);
         boolean reset = false;
         if (this.dJoystick.getRawButton(7))
             reset = true;

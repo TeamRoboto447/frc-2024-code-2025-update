@@ -7,6 +7,7 @@ package frc.robot;
 import java.util.Optional;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -40,7 +41,9 @@ public class Robot extends TimedRobot {
         // and put our
         // autonomous chooser on the dashboard.
         m_robotContainer = new RobotContainer();
-        // CameraServer.startAutomaticCapture();
+        UsbCamera cam = CameraServer.startAutomaticCapture();
+        cam.setResolution(106, 80);
+        cam.setFPS(3);
         m_gcTimer.start();
     }
 

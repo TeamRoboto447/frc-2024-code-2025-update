@@ -41,8 +41,8 @@ public final class Constants {
         public static final double FIELD_LENGTH_METERS = Units.inchesToMeters(651.25);
         public static final double FIELD_WIDTH_METERS = Units.inchesToMeters(315.5);
 
-        public static final Translation2d BLUE_SPEAKER = new Translation2d(0, 6.0);
-        public static final Translation2d RED_SPEAKER = new Translation2d(17.42, 5.98);
+        public static final Translation2d BLUE_SPEAKER = new Translation2d(0.5, 5.6);
+        public static final Translation2d RED_SPEAKER = new Translation2d(17, 5.6);
     }
 
     public static final class DrivetrainConstants {
@@ -61,12 +61,12 @@ public final class Constants {
     }
 
     public static class ShooterConstants {
-        public static final int leftMotorId = 31;
-        public static final int rightMotorId = 32;
+        public static final int topMotorId = 31;
+        public static final int bottomMotorId = 32;
         public static final int aimMotorId = 33;
 
         public static final int aimPotentiometer = 0;
-        public static final double[] aimControllerVals = new double[] { 0.7, 0.002, 0.07 }; // P, I, D
+        public static final double[] aimControllerVals = new double[] { 0.025, 0, 0.005 }; // P, I, D
     }
 
     public static class ClimberConstants {

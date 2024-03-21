@@ -11,34 +11,38 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final CANSparkMax leftMotor;
-    private final CANSparkMax rightMotor;
+    private final CANSparkMax topMotor;
+    private final CANSparkMax bottomMotor;
     private final CANSparkMax aimMotor;
     private final SparkLimitSwitch aimUpperLimitSwitch;
     private final RelativeEncoder aimEncoder;
     private final PIDController aimPidController;
 
-    private final double teleopMinAngle = 40.25; // Software limit
-    private final double outputMin = 40; // Aim angle min
-    private final double outputMax = 58; // Aim angle max
+    private final double teleopMinAngle = 41.1; // Software limit
+    private final double outputMin = 41; // Aim angle min
+    private final double outputMax = 62; // Aim angle max
     private boolean hasZerodEncoder = false;
 
     public ShooterSubsystem() {
-        this.leftMotor = new CANSparkMax(ShooterConstants.leftMotorId, MotorType.kBrushless);
-        this.leftMotor.setInverted(false);
-        this.leftMotor.setIdleMode(IdleMode.kBrake);
+        this.topMotor = new CANSparkMax(ShooterConstants.topMotorId, MotorType.kBrushless);
+        this.topMotor.setInverted(true);
+        this.topMotor.setIdleMode(IdleMode.kBrake);
+        this.topMotor.setSmartCurrentLimit(80);
 
-        this.rightMotor = new CANSparkMax(ShooterConstants.rightMotorId, MotorType.kBrushless);
-        this.rightMotor.setInverted(true);
-        this.rightMotor.setIdleMode(IdleMode.kBrake);
+        this.bottomMotor = new CANSparkMax(ShooterConstants.bottomMotorId, MotorType.kBrushless);
+        this.bottomMotor.setInverted(true);
+        this.bottomMotor.setIdleMode(IdleMode.kBrake);
+        this.bottomMotor.setSmartCurrentLimit(80);
 
         this.aimMotor = new CANSparkMax(ShooterConstants.aimMotorId, MotorType.kBrushless);
         this.aimMotor.setInverted(false);
         this.aimMotor.setIdleMode(IdleMode.kBrake);
+        this.topMotor.setSmartCurrentLimit(40);
 
         this.aimEncoder = this.aimMotor.getEncoder();
         this.aimPidController = new PIDController(ShooterConstants.aimControllerVals[0],
@@ -56,9 +60,17 @@ public class ShooterSubsystem extends SubsystemBase {
         pidTuningPVs = table.getTable("pidTuningPVs");
         angleOfShooter = pidTuningPVs.getEntry("angleOfShooter");
     }
-
+    private double holdTarget = 0;
+    private boolean hasMoved = false;
     public void manualAim(double speed) {
-        moveAimMotor(speed);
+        if(Math.abs(speed) > 0) {
+            hasMoved = true;
+            holdTarget = getAngle();
+        }
+        if(speed == 0 && hasMoved && hasZerodEncoder)
+            autoAim(holdTarget);
+        else
+            moveAimMotor(speed);
     }
 
     public boolean autoAim() {
@@ -67,13 +79,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public boolean autoAim(double targetAngle) {
         if (!hasZerodEncoder) {
-            moveAimMotor(1);
+            moveAimMotor(0.2);
         } else {
             double aimSpeed = this.aimPidController.calculate(getAngle(), targetAngle);
-            double giveOrTake = 0.5;
+            double giveOrTake = 0.3;
             if (Math.abs(targetAngle - getAngle()) <= giveOrTake)
                 aimSpeed = 0;
-            moveAimMotor(Math.min(aimSpeed, 0.4));
+            moveAimMotor(Math.min(aimSpeed, 0.2));
             if(aimSpeed == 0) return true;
         }
         return false;
@@ -81,11 +93,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public void moveAimMotor(double speed) {
         if (hasZerodEncoder && speed <= 0 && getAngle() <= teleopMinAngle) {
-            System.out.println(getAngle());
             this.aimMotor.set(0);
             return;
-        }
-        this.aimMotor.set(hasZerodEncoder ? speed : Math.max(speed * 3, 0));
+        } 
+        this.aimMotor.set(hasZerodEncoder ? speed : Math.max(speed, 0));
     }
 
     public double mapNormalizedToAngle(double normalized) {
@@ -93,24 +104,33 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void spin(double mainSpeed) {
-        // int sign = mainSpeed >= 0 ? 1 : -1;
-        // double rightSpeed = (Math.min(Math.abs(mainSpeed), 0.05)) * sign;
-        this.leftMotor.set(mainSpeed);
-        // this.rightMotor.set(rightSpeed);
-        this.rightMotor.set(mainSpeed);
+        this.topMotor.set(mainSpeed);
+        this.bottomMotor.set(mainSpeed);
+    }
+
+    public void spinDifferently(double bottomSpeed, double topSpeed) {
+        this.topMotor.set(topSpeed);
+        this.bottomMotor.set(bottomSpeed);
     }
 
     public double getNeededAngleFromDistance(double distance) {
-        double calculated = (-3.054298939809341 * distance) + 55.40461859090529;
+        double calculated = (-7.3595154 * distance) + 65.4586221;
         return calculated > this.outputMax ? this.outputMax : calculated < this.outputMin ? this.outputMin : calculated; // TODO: move numbers to constants
     }
 
+    double aimEncoderTop = 1.6223723883;
+
     private double getAngle() {
         double inputMin = 0; // min encoder position
-        double inputMax = 1.8092646; // max encoder value
+        double inputMax = aimEncoderTop; // max encoder value
         double reading = this.aimEncoder.getPosition();
         double normalized = (reading - inputMin) / (inputMax - inputMin);
         return mapNormalizedToAngle(normalized);
+    }
+    
+    private double getRawPosition() {
+        double reading = this.aimEncoder.getPosition();
+        return reading;
     }
 
     @Override
@@ -118,10 +138,12 @@ public class ShooterSubsystem extends SubsystemBase {
         if (!this.hasZerodEncoder) {
             if (this.aimUpperLimitSwitch.isPressed()) {
                 this.hasZerodEncoder = true;
-                this.aimEncoder.setPosition(1.8092646);
+                this.aimEncoder.setPosition(aimEncoderTop);
             }
         }
-        this.angleOfShooter.setDouble(this.getAngle());
+        // this.angleOfShooter.setDouble(this.getAngle());
+        
+        this.angleOfShooter.setDouble(getRawPosition());
     }
 
 }

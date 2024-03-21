@@ -45,7 +45,7 @@ public class AimRobotBaseAtSpeaker extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        Translation2d target = new Translation2d(0, 0);
+        Translation2d target = FieldConstants.BLUE_SPEAKER;
         Optional<Alliance> maybeAlliance = DriverStation.getAlliance();
         if (maybeAlliance.isPresent()) {
             target = maybeAlliance.get() == Alliance.Blue ? FieldConstants.BLUE_SPEAKER : FieldConstants.RED_SPEAKER;
@@ -55,7 +55,12 @@ public class AimRobotBaseAtSpeaker extends Command {
 
         double curRadians = this.swerve.getPose().getRotation().getRadians();
         double rotationSpeed = -this.headingControl.calculate(curRadians,
-                targetRadians);
+                targetRadians) * 0.6;
+        double minSpeed = 0.05;
+        if (rotationSpeed < 0 && rotationSpeed > -minSpeed)
+            rotationSpeed = -minSpeed;
+        if (rotationSpeed > 0 && rotationSpeed < minSpeed)
+            rotationSpeed = minSpeed;
 
         this.avgErr.add(curRadians - targetRadians);
         SmartDashboard.putNumberArray("Avg Error", new Double[] {
@@ -64,12 +69,15 @@ public class AimRobotBaseAtSpeaker extends Command {
                 targetRadians
         });
 
-        if (Math.abs(this.avgErr.getAvg()) < 0.2) {
+        if (Math.abs(this.avgErr.getAvg()) < 0.05) {
             rotationSpeed = 0;
             done = true;
         }
         this.swerve.drive(new Translation2d(0, 0),
-                rotationSpeed > 1 ? 1 : rotationSpeed < -1 ? -1 : rotationSpeed * (this.swerve.getSwerveController().config.maxAngularVelocity), true);
+                rotationSpeed > 1 ? 1
+                        : rotationSpeed < -1 ? -1
+                                : rotationSpeed * (this.swerve.getSwerveController().config.maxAngularVelocity),
+                true);
     }
 
     // Called once the command ends or is interrupted.

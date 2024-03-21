@@ -6,18 +6,18 @@ package frc.robot;
 
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.Autos;
+import frc.robot.commands.autoScripts.AimShooterAtTarget;
 import frc.robot.commands.climber.ClimbTeleop;
 import frc.robot.commands.drivebase.TeleopDrive;
+import frc.robot.commands.intake.LoadShooter;
+import frc.robot.commands.intake.RunIntake;
 import frc.robot.commands.intake.TeleopIndex;
 import frc.robot.commands.shooter.TeleopShoot;
-import frc.robot.commands.testing.ServoTestingCommand;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
-import frc.robot.subsystems.ServoTestingSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
-import swervelib.SwerveDrive;
 
 import java.io.File;
 import java.util.function.DoubleSupplier;
@@ -26,7 +26,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
@@ -49,8 +48,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
     private final boolean driverUsingJoystick = true; // Set to false if using gamepad
-    private final double maxAllowedSpeedRange = 0.5; // percentage of max speed (inputs are multiplied by this number)
-    private final double turnSpeedPercentage = 0.5; // percentage of max turn speed to allow
+    private final double maxAllowedSpeedRange = 1; // percentage of max speed (inputs are multiplied by this number)
+    private final double turnSpeedPercentage = 0.65; // percentage of max turn speed to allow
     private final double adjustSpeed = 0.15; // percentage of the max speed to move when using fine adjustments
     private final double adjustTurnSpeed = 0.15; // percentage of the max speed to move when using fine adjustments
 
@@ -77,7 +76,7 @@ public class RobotContainer {
 
     private final TeleopIndex indexerCommand = new TeleopIndex(intakeSubsystem, commandOperatorController);
 
-    private final TeleopShoot shooterCommand = new TeleopShoot(this.shooterSubsystem, this.commandOperatorController);
+    private final TeleopShoot shooterCommand = new TeleopShoot(this.shooterSubsystem, this.commandOperatorController, this.commandDriverJoystick);
 
     private final DoubleSupplier climbSpeedSupplierJoystick = new DoubleSupplier() {
         @Override
@@ -121,7 +120,7 @@ public class RobotContainer {
      */
     public RobotContainer() {
         // Configure Named Commands
-        NamedCommands.registerCommand("Test Command", Autos.testNamedCommand());
+        NamedCommands.registerCommand("No Auto", Autos.noAuto());
         NamedCommands.registerCommand("Aim At Speaker", Autos.aimAtTarget(drivebase, shooterSubsystem));
         NamedCommands.registerCommand("Keep Shooter Aimed (Endless)", Autos.keepShooterAimedEndless(drivebase, shooterSubsystem));
         NamedCommands.registerCommand("Shoot", Autos.shoot(drivebase, shooterSubsystem, intakeSubsystem));
@@ -130,7 +129,7 @@ public class RobotContainer {
         // Configure the trigger bindings
         configureBindings();
 
-        autoChooser = AutoBuilder.buildAutoChooser("One Note Auto Source Side");
+        autoChooser = AutoBuilder.buildAutoChooser("No Auto");
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -209,6 +208,9 @@ public class RobotContainer {
      */
     private void configureBindings() {
         commandOperatorController.leftBumper().onTrue(Autos.aimAtTarget(drivebase, shooterSubsystem));
+        commandOperatorController.start().onTrue(new AimShooterAtTarget(drivebase, shooterSubsystem));
+        commandOperatorController.x().whileTrue(new RunIntake(intakeSubsystem));
+        commandOperatorController.rightTrigger().whileTrue(new LoadShooter(intakeSubsystem));
     }
 
     /**
