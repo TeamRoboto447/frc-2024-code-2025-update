@@ -31,6 +31,7 @@ public class LoadShooter extends Command {
   @Override
   public void end(boolean interrupted) {
     this.subsystem.idleIntake();
+    this.subsystem.load(0);
   }
 
   // Returns true when the command should end.

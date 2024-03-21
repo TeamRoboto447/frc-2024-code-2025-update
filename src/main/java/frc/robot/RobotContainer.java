@@ -6,12 +6,12 @@ package frc.robot;
 
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.commands.Autos;
-import frc.robot.commands.autoScripts.AimShooterAtTarget;
 import frc.robot.commands.climber.ClimbTeleop;
 import frc.robot.commands.drivebase.TeleopDrive;
 import frc.robot.commands.intake.LoadShooter;
 import frc.robot.commands.intake.RunIntake;
 import frc.robot.commands.intake.TeleopIndex;
+import frc.robot.commands.misc.AimShooterAtTarget;
 import frc.robot.commands.shooter.TeleopShoot;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -125,6 +125,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Keep Shooter Aimed (Endless)", Autos.keepShooterAimedEndless(drivebase, shooterSubsystem));
         NamedCommands.registerCommand("Shoot", Autos.shoot(drivebase, shooterSubsystem, intakeSubsystem));
         NamedCommands.registerCommand("Initial Shoot", Autos.shootAtStart(drivebase, shooterSubsystem, intakeSubsystem));
+        NamedCommands.registerCommand("Lower Intake", Autos.lowerIntake(intakeSubsystem));
+        NamedCommands.registerCommand("Run Intake", Autos.runIntake(intakeSubsystem));
+        NamedCommands.registerCommand("Raise Intake", Autos.raiseIntake(intakeSubsystem));
 
         // Configure the trigger bindings
         configureBindings();

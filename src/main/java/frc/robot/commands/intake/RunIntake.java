@@ -31,6 +31,7 @@ public class RunIntake extends Command {
   @Override
   public void end(boolean interrupted) {
     this.subsystem.idleIntake();
+    this.subsystem.manualIntake(0);
   }
 
   // Returns true when the command should end.
