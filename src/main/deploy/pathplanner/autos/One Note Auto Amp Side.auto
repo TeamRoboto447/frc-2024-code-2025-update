@@ -1,6 +1,12 @@
 {
   "version": 1.0,
-  "startingPose": null,
+  "startingPose": {
+    "position": {
+      "x": 1.1193335391155093,
+      "y": 6.856419094004107
+    },
+    "rotation": -117.76999999999998
+  },
   "command": {
     "type": "sequential",
     "data": {
@@ -8,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "Initial Shoot"
           }
         },
         {

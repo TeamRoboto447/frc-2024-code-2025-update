@@ -98,7 +98,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public boolean atLowerLimit() {
-        return getState() == IntakeStatus.LOWERED;
+        return getState() == IntakeStatus.LOWERED || getState() == IntakeStatus.STALLED_AT_BOTTOM;
     }
 
     public void liftManual(double speed) {
@@ -106,7 +106,8 @@ public class IntakeSubsystem extends SubsystemBase {
             this.liftManualControl = true;
             moveLifter(speed);
         } else {
-            this.liftManualControl = false;
+            // this.liftManualControl = false;
+            moveLifter(0);
         }
     }
 
@@ -131,8 +132,8 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void manualIntake(double speed) {
-        if(getState() != IntakeStatus.LOWERED && getState() != IntakeStatus.STALLED_AT_BOTTOM)
-            speed = Math.min(speed, 0);
+    //    if (getState() != IntakeStatus.LOWERED && getState() != IntakeStatus.STALLED_AT_BOTTOM)
+    //      speed = Math.min(speed, 0);
         this.left.set(speed);
         this.front.set(speed);
         this.right.set(speed);
@@ -145,7 +146,17 @@ public class IntakeSubsystem extends SubsystemBase {
         runLifter();
     }
 
-    private double previousPos = 0;
+    private double leftPrevPos = Double.MAX_VALUE;
+    private double midPrevPos = Double.MAX_VALUE;
+    private double rightPrevPos = Double.MAX_VALUE;
+
+    public void resetLowerLimitMonitor() {
+        leftPrevPos = Double.MAX_VALUE;
+        midPrevPos = Double.MAX_VALUE;
+        rightPrevPos = Double.MAX_VALUE;
+        cantMoveLower = false;
+    }
+
     private void monitorLimits(double movementSpeed) {
         if (this.upLimitMid.isPressed()) {
             this.liftEncoderLeft.setPosition(0);
@@ -153,39 +164,47 @@ public class IntakeSubsystem extends SubsystemBase {
             this.liftEncoderRight.setPosition(0);
             this.zerodMotors = true;
         }
-        double pos = this.liftEncoderMid.getPosition();
-        boolean moving = Math.abs(pos - this.previousPos) > 1;
-        this.previousPos = pos;
+        double leftPos = this.liftEncoderLeft.getPosition();
+        double midPos = this.liftEncoderMid.getPosition();
+        double rightPos = this.liftEncoderRight.getPosition();
+        boolean leftMoving = Math.abs(leftPos - this.leftPrevPos) > 1;
+        this.leftPrevPos = leftPos;
+        boolean midMoving = Math.abs(midPos - this.midPrevPos) > 1;
+        this.midPrevPos = midPos;
+        boolean rightMoving = Math.abs(rightPos - this.rightPrevPos) > 1;
+        this.rightPrevPos = rightPos;
+        boolean moving = leftMoving || midMoving || rightMoving;
 
-        if(moving == false && movementSpeed < 0)
+        if (moving == false && movementSpeed < 0 && midPos < -300)
             cantMoveLower = true;
-        else if(moving == true && movementSpeed < 0)
+        else if (moving == true && movementSpeed < 0)
             cantMoveLower = false;
-        else if(movementSpeed > 0)
-            cantMoveLower = false;
+        else if (movementSpeed >= 0)
+            resetLowerLimitMonitor();
     }
 
     private void moveLifter(double speed) {
+        this.lifterLeft.set(speed);
+        this.lifterRight.set(speed);
         monitorLimits(speed);
         if (speed > 0 && atUpperLimit())
             speed = 0;
         if (speed < 0 && atLowerLimit())
             speed = 0;
-        this.lifterLeft.set(speed);
         this.lifterMid.set(speed);
-        this.lifterRight.set(speed);
     }
 
     private double liftPosMargin = 1;
+
     public IntakeStatus getState() {
         double pos = this.liftEncoderMid.getPosition();
-        if(this.upLimitMid.isPressed())
+        if (this.upLimitMid.isPressed())
             return IntakeStatus.RAISED;
-        if(Math.abs(this.liftEncoderMid.getPosition() - (this.liftMin/2)) < liftPosMargin)
+        if (Math.abs(this.liftEncoderMid.getPosition() - (this.liftMin / 2)) < liftPosMargin)
             return IntakeStatus.IDLE;
-        if(pos <= this.liftMin)
+        if (pos <= this.liftMin)
             return IntakeStatus.LOWERED;
-        if(cantMoveLower)
+        if (cantMoveLower)
             return IntakeStatus.STALLED_AT_BOTTOM;
         return IntakeStatus.MOVING;
     }
@@ -219,11 +238,12 @@ public class IntakeSubsystem extends SubsystemBase {
                 double pos = this.liftEncoderMid.getPosition();
                 boolean atTarget = false;
                 double error = Math.abs(this.liftEncoderMid.getPosition() - setpoint);
-                if(setpoint == 0)
+                if (setpoint == 0)
                     atTarget = getState() == IntakeStatus.RAISED;
-                if(setpoint == this.liftMin)
+                if (setpoint == this.liftMin)
                     atTarget = getState() == IntakeStatus.LOWERED;
-                else // This setpoint may not directly match the IDLE position in getState(), so we calculate this ourselves
+                else // This setpoint may not directly match the IDLE position in getState(), so we
+                     // calculate this ourselves
                     atTarget = (error < liftPosMargin);
                 double speed = atTarget ? 0 : (setpoint > pos || setpoint == 0) ? maxSpeed : -maxSpeed;
                 speed = error < 10 ? speed * 0.25 : speed; // Slow it down if close

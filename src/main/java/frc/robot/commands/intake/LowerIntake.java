@@ -6,7 +6,6 @@ package frc.robot.commands.intake;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.IntakeSubsystem.IntakeStatus;
 
 public class LowerIntake extends Command {
   /** Creates a new LowerIntake. */
@@ -19,7 +18,9 @@ public class LowerIntake extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    this.subsystem.resetLowerLimitMonitor();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -34,6 +35,6 @@ public class LowerIntake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return this.subsystem.getState() == IntakeStatus.LOWERED || this.subsystem.getState() == IntakeStatus.STALLED_AT_BOTTOM;
+    return this.subsystem.atLowerLimit();
   }
 }

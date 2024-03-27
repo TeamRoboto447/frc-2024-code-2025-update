@@ -50,8 +50,8 @@ public class RobotContainer {
     private final boolean driverUsingJoystick = true; // Set to false if using gamepad
     private final double maxAllowedSpeedRange = 1; // percentage of max speed (inputs are multiplied by this number)
     private final double turnSpeedPercentage = 0.65; // percentage of max turn speed to allow
-    private final double adjustSpeed = 0.15; // percentage of the max speed to move when using fine adjustments
-    private final double adjustTurnSpeed = 0.15; // percentage of the max speed to move when using fine adjustments
+    private final double adjustSpeed = 0.25; // percentage of the max speed to move when using fine adjustments
+    private final double adjustTurnSpeed = 0.25; // percentage of the max speed to move when using fine adjustments
 
     private final SendableChooser<Command> autoChooser;
     // The robot's subsystems and commands are defined here...
@@ -121,13 +121,16 @@ public class RobotContainer {
     public RobotContainer() {
         // Configure Named Commands
         NamedCommands.registerCommand("No Auto", Autos.noAuto());
+        NamedCommands.registerCommand("Aim Forward", Autos.aimForward(drivebase));
         NamedCommands.registerCommand("Aim At Speaker", Autos.aimAtTarget(drivebase, shooterSubsystem));
         NamedCommands.registerCommand("Keep Shooter Aimed (Endless)", Autos.keepShooterAimedEndless(drivebase, shooterSubsystem));
         NamedCommands.registerCommand("Shoot", Autos.shoot(drivebase, shooterSubsystem, intakeSubsystem));
         NamedCommands.registerCommand("Initial Shoot", Autos.shootAtStart(shooterSubsystem, intakeSubsystem));
         NamedCommands.registerCommand("Lower Intake", Autos.lowerIntake(intakeSubsystem));
         NamedCommands.registerCommand("Run Intake", Autos.runIntake(intakeSubsystem));
+        NamedCommands.registerCommand("Run Intake Backwards", Autos.runIntakeBackwards(intakeSubsystem));
         NamedCommands.registerCommand("Raise Intake", Autos.raiseIntake(intakeSubsystem));
+        NamedCommands.registerCommand("Raise Intake Endless", Autos.raiseIntakeEndless(intakeSubsystem));
 
         // Configure the trigger bindings
         configureBindings();
@@ -146,8 +149,8 @@ public class RobotContainer {
                 double speed = 0;
                 speed = yDirFromPOV(commandDriverJoystick.getHID().getPOV()) * adjustSpeed;
                 if (speed == 0)
-                    speed = MathUtil.applyDeadband(commandDriverJoystick.getY() * maxAllowedSpeedRange,
-                            ControllerConstants.Y_DEADBAND);
+                    speed = MathUtil.applyDeadband(commandDriverJoystick.getY(),
+                            ControllerConstants.Y_DEADBAND) * maxAllowedSpeedRange;
                 return speed;
             }
         };
@@ -158,8 +161,8 @@ public class RobotContainer {
                 double speed = 0;
                 speed = xDirFromPOV(commandDriverJoystick.getHID().getPOV()) * adjustSpeed;
                 if (speed == 0)
-                    speed = MathUtil.applyDeadband(commandDriverJoystick.getX() * maxAllowedSpeedRange,
-                            ControllerConstants.X_DEADBAND);
+                    speed = MathUtil.applyDeadband(commandDriverJoystick.getX(),
+                            ControllerConstants.X_DEADBAND) * maxAllowedSpeedRange;
                 return speed;
             }
         };
@@ -169,7 +172,7 @@ public class RobotContainer {
             public double getAsDouble() {
                 double speed = 0;
                 if (basicDriverJoystick.getRawButton(1)) {
-                    speed = MathUtil.applyDeadband((commandDriverJoystick.getZ() * turnSpeedPercentage),
+                    speed = MathUtil.applyDeadband((commandDriverJoystick.getZ()) * turnSpeedPercentage,
                             ControllerConstants.Z_DEADBAND);
                 } else {
                     if (basicDriverGamepad.getRawButton(4))
@@ -212,9 +215,9 @@ public class RobotContainer {
     private void configureBindings() {
         commandOperatorController.leftBumper().onTrue(Autos.aimAtTarget(drivebase, shooterSubsystem));
         commandOperatorController.start().onTrue(new AimShooterAtTarget(drivebase, shooterSubsystem));
-        commandOperatorController.x().whileTrue(new RunIntake(intakeSubsystem));
-        commandOperatorController.rightTrigger().whileTrue(new LoadShooter(intakeSubsystem));
-    }
+    //     commandOperatorController.x().whileTrue(new RunIntake(intakeSubsystem));
+    //     commandOperatorController.rightTrigger().whileTrue(new LoadShooter(intakeSubsystem));
+     }
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.

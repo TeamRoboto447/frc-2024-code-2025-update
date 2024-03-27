@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.7566125160740347,
-        "y": 7.051575128791284
+        "x": 2.7272273347965497,
+        "y": 6.856419094004107
       },
       "prevControl": {
-        "x": 1.7715300527467148,
-        "y": 7.034033897127624
+        "x": 2.7421448714692302,
+        "y": 6.838877862340447
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0,
+    "rotation": -117.76999999999998,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "One Note Auto Amp Side",
   "previewStartingState": {
-    "rotation": 180.0,
+    "rotation": -117.76999999999998,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -76,20 +76,25 @@ public class ShooterSubsystem extends SubsystemBase {
     public boolean autoAim() {
         return autoAim(49);
     }
-
+    double maxAimSpeed = 0.2;
+    double minAimSpeed = 0.03;
     public boolean autoAim(double targetAngle) {
         if(targetAngle == -1) {
             System.out.println("Warning: -1 is not a valid auto-aim value");
             return true;
         }
         if (!hasZerodEncoder) {
-            moveAimMotor(0.2);
+            moveAimMotor(0.4);
         } else {
             double aimSpeed = this.aimPidController.calculate(getAngle(), targetAngle);
             double giveOrTake = 0.3;
-            if (Math.abs(targetAngle - getAngle()) <= giveOrTake)
+            if (aimSpeed < 0 && aimSpeed > -minAimSpeed) // Set minimum speed, otherwise it could get stuck at *just barely* off
+                aimSpeed = -minAimSpeed;
+            if (aimSpeed > 0 && aimSpeed < minAimSpeed) // Set minimum speed, otherwise it could get stuck at *just barely* off
+                aimSpeed = minAimSpeed;
+            if (Math.abs(targetAngle - getAngle()) <= giveOrTake) // Check if we're in margin of error
                 aimSpeed = 0;
-            moveAimMotor(Math.min(aimSpeed, 0.2));
+            moveAimMotor(Math.min(aimSpeed, maxAimSpeed));
             if(aimSpeed == 0) return true;
         }
         return false;
@@ -118,7 +123,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public double getNeededAngleFromDistance(double distance) {
-        double calculated = (-7.3595154 * distance) + 65.4586221;
+        double calculated = (-7.3595154 * distance) + 65.4586221; // When calibrating, replace this value with the generated equation
         return calculated > this.outputMax ? this.outputMax : calculated < this.outputMin ? this.outputMin : calculated; // TODO: move numbers to constants
     }
 
@@ -145,9 +150,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 this.aimEncoder.setPosition(aimEncoderTop);
             }
         }
-        // this.angleOfShooter.setDouble(this.getAngle());
-        
-        this.angleOfShooter.setDouble(getRawPosition());
+        this.angleOfShooter.setDouble(this.getAngle());
     }
 
 }

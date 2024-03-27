@@ -10,8 +10,10 @@ import frc.robot.subsystems.IntakeSubsystem.IntakeStatus;
 
 public class RunIntake extends Command {
   private final IntakeSubsystem subsystem;
-  public RunIntake(IntakeSubsystem intake) {
+  private final double dir;
+  public RunIntake(IntakeSubsystem intake, double dir) {
     this.subsystem = intake;
+    this.dir = dir;
     addRequirements(this.subsystem);
   }
 
@@ -23,7 +25,7 @@ public class RunIntake extends Command {
   @Override
   public void execute() {
     this.subsystem.lowerIntake();
-    double speed = this.subsystem.getState() == IntakeStatus.LOWERED || this.subsystem.getState() == IntakeStatus.STALLED_AT_BOTTOM ? 1 : 0;
+    double speed = this.subsystem.getState() == IntakeStatus.LOWERED || this.subsystem.getState() == IntakeStatus.STALLED_AT_BOTTOM ? this.dir : 0;
     this.subsystem.manualIntake(speed);
   }
 

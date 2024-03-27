@@ -11,9 +11,11 @@ import frc.robot.subsystems.IntakeSubsystem.IntakeStatus;
 public class RaiseIntake extends Command {
   /** Creates a new RaiseIntake. */
   private final IntakeSubsystem subsystem;
-  public RaiseIntake(IntakeSubsystem intake) {
+  private final boolean isEndless;
+  public RaiseIntake(IntakeSubsystem intake, boolean endless) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.subsystem = intake;
+    this.isEndless = endless;
     addRequirements(this.subsystem);
   }
 
@@ -34,6 +36,6 @@ public class RaiseIntake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return this.subsystem.getState() == IntakeStatus.RAISED;
+    return this.subsystem.getState() == IntakeStatus.RAISED && !this.isEndless;
   }
 }

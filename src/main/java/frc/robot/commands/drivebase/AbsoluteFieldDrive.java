@@ -65,6 +65,7 @@ public class AbsoluteFieldDrive extends Command
     ChassisSpeeds desiredSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
         vX.getAsDouble() * swerve.maximumSpeed,
         vY.getAsDouble()* swerve.maximumSpeed,
+        // FIXME: 1720 Justin says: why radian * rad/s?
         heading.getAsDouble() * swerve.getSwerveController().config.maxAngularVelocity, swerve.getSwerveDrive().getOdometryHeading());
 
     // Limit velocity to prevent tippy

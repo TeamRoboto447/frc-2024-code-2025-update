@@ -23,10 +23,12 @@ public class TeleopShoot extends Command {
 
     @Override
     public void execute() {
+        boolean isB = this.operatorController.getBButton();
         if (this.operatorController.getAButton()) {
             this.shooterSubsystem.spin(0.7);
-        } else if (this.operatorController.getBButton()) {
-            double speed = 0.417322836816311;
+        } else if (isB) {
+            this.shooterSubsystem.autoAim(54.87375107427691);
+            double speed = 0.37007874250412;
             this.shooterSubsystem.spinDifferently(speed, speed * 0.25);
         } else if (this.operatorController.getBackButton()) {
             this.shooterSubsystem.spin(-0.2);
@@ -46,6 +48,7 @@ public class TeleopShoot extends Command {
             this.shooterSubsystem.spin(0);
         }
         double aimSpeed = MathUtil.applyDeadband(this.operatorController.getRightY(), 0.25);
-        this.shooterSubsystem.manualAim(-aimSpeed * 0.2);
+        if(!isB)
+            this.shooterSubsystem.manualAim(-aimSpeed * 0.2);
     }
 }

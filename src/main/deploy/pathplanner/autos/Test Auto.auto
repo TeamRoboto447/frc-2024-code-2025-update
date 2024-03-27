@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.9200160373414925,
-      "y": 5.540354757839561
+      "x": 0.98,
+      "y": 7.0036710477008395
     },
-    "rotation": 180.0
+    "rotation": -125.97
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,19 @@
         {
           "type": "named",
           "data": {
+            "name": "Aim At Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Initial Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Aim Forward"
           }
         },
         {
@@ -62,9 +74,28 @@
           }
         },
         {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "TA Second Move"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Run Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "Raise Intake"
+            "name": "Aim At Speaker"
           }
         },
         {

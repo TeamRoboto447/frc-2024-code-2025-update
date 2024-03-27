@@ -66,7 +66,7 @@ public final class Constants {
         public static final int aimMotorId = 33;
 
         public static final int aimPotentiometer = 0;
-        public static final double[] aimControllerVals = new double[] { 0.025, 0, 0.005 }; // P, I, D
+        public static final double[] aimControllerVals = new double[] { 0.035, 0, 0.005 }; // P, I, D
     }
 
     public static class ClimberConstants {
@@ -76,10 +76,6 @@ public final class Constants {
     public static class IntakeConstants {
         public static final double intakeWheelDiameterMeters = Units.inchesToMeters(2.25);
         public static final double intakeWheelCircunferenceMeters = intakeWheelDiameterMeters * Math.PI;
-
-        public static final double[] leftControllerVals = new double[] { 0, 0, 0 }; // P, I, D
-        public static final double[] frontControllerVals = new double[] { 0, 0, 0 }; // P, I, D
-        public static final double[] rightControllerVals = new double[] { 0, 0, 0 }; // P, I, D
 
         public static final int leftMotorId = 21;
         public static final int frontMotorId = 22;
@@ -93,7 +89,7 @@ public final class Constants {
     }
 
     public static class VisionConstants {
-        public static boolean USE_VISION = true;
+        public static boolean USE_VISION = false;
         /** Minimum target ambiguity. Targets with higher ambiguity will be discarded */
         public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.2;
         public static final double POSE_AMBIGUITY_SHIFTER = 0.2;

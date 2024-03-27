@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.0904880796308694,
-        "y": 3.9942092440238697
+        "x": 2.1774197899684538,
+        "y": 0.3039893795916111
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.2243786937716323,
-        "y": 2.6662672128763063
+        "x": 7.568607273966684,
+        "y": 0.7952025020859156
       },
       "prevControl": {
-        "x": 2.1243786937716322,
-        "y": 2.6662672128763063
+        "x": 4.107137559004462,
+        "y": 0.8068966565283564
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0,
+    "rotation": 113.93,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "One Note Auto Source Side",
   "previewStartingState": {
-    "rotation": 180.0,
+    "rotation": 113.93,
     "velocity": 0
   },
   "useDefaultConstraints": true

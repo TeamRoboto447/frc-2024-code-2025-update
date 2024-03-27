@@ -236,18 +236,25 @@ public class SwerveSubsystem extends SubsystemBase {
         distFromTarget.setDouble(distance);
         withinRange.setBoolean(distance < 2.75);
         boolean reset = false;
-        if (this.dJoystick.getRawButton(7))
+        // if (this.dJoystick.getRawButton(7))
+        //     reset = true;
+        //     System.out.println("Joystick button 7 pressed");
+        // if (this.dJoystick.getRawButton(8))
+        //     reset = true;
+        //     System.out.println("Joystick button 8 pressed");
+        // if (this.dJoystick.getRawButton(9))
+        //     reset = true;
+        //     System.out.println("Joystick button 9 pressed");
+        // if (this.dJoystick.getRawButton(10))
+        //     reset = true;
+        //     System.out.println("Joystick button 10 pressed");
+        // if (this.dJoystick.getRawButton(11))
+        //     reset = true;
+        //     System.out.println("Joystick button 11 pressed");
+        if (this.dJoystick.getRawButton(12)) {
             reset = true;
-        if (this.dJoystick.getRawButton(8))
-            reset = true;
-        if (this.dJoystick.getRawButton(9))
-            reset = true;
-        if (this.dJoystick.getRawButton(10))
-            reset = true;
-        if (this.dJoystick.getRawButton(11))
-            reset = true;
-        if (this.dJoystick.getRawButton(12))
-            reset = true;
+            System.out.println("Joystick button 12 pressed");
+        }
         if (reset) {
             reset = false;
             this.swerveDrive.zeroGyro();

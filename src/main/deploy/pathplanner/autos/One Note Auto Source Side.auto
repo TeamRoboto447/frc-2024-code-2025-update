@@ -1,6 +1,12 @@
 {
   "version": 1.0,
-  "startingPose": null,
+  "startingPose": {
+    "position": {
+      "x": 0.9904880796308685,
+      "y": 3.9942092440238697
+    },
+    "rotation": 113.93
+  },
   "command": {
     "type": "sequential",
     "data": {
@@ -8,19 +14,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Aim At Speaker"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
+            "name": "Initial Shoot"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 4.0
+            "waitTime": 3.0
           }
         },
         {

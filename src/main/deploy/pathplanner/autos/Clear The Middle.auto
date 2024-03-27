@@ -1,0 +1,63 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.7275269251393202,
+      "y": 4.174813135951059
+    },
+    "rotation": -72.17000000000002
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Initial Shoot"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Raise Intake Endless"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CTM First Move"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Run Intake Backwards"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CTM Second Move"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

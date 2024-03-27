@@ -1,11 +1,12 @@
 {
-  "robotWidth": 0.619125,
-  "robotLength": 0.62,
+  "robotWidth": 0.62,
+  "robotLength": 0.91,
   "holonomicMode": true,
   "pathFolders": [
-    "Test Auto",
+    "Clear The Middle",
     "One Note Auto Amp Side",
     "One Note Auto Source Side",
+    "Test Auto",
     "Two Note Auto"
   ],
   "autoFolders": [],
