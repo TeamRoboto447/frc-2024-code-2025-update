@@ -7,7 +7,7 @@ package frc.robot.commands.shooter;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Units;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;

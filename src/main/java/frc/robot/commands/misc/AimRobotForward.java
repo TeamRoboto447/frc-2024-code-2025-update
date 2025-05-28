@@ -6,7 +6,7 @@ package frc.robot.commands.misc;
 
 import java.util.Optional;
 
-import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.config.PIDConstants;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;

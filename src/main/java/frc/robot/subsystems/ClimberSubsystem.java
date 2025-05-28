@@ -5,6 +5,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.utils.EncoderBasedLimits;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ClimberSubsystem extends SubsystemBase {
@@ -33,21 +34,21 @@ public class ClimberSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // if (climberUp) {
-        //     if (this.getClimberPos() >= this.climbLimits.getUpperLimit()) {
-        //         this.climbMotor.set(1);
-        //     } else {
-        //         this.climbMotor.set(0);
-        //     }
+        // if (this.getClimberPos() >= this.climbLimits.getUpperLimit()) {
+        // this.climbMotor.set(1);
         // } else {
-        //     if (this.getClimberPos() <= this.climbLimits.getLowerLimit()) {
-        //         this.climbMotor.set(-1);
-        //     } else {
-        //         this.climbMotor.set(0);
-        //     }
+        // this.climbMotor.set(0);
+        // }
+        // } else {
+        // if (this.getClimberPos() <= this.climbLimits.getLowerLimit()) {
+        // this.climbMotor.set(-1);
+        // } else {
+        // this.climbMotor.set(0);
+        // }
         // }
     }
 
-    private double getClimberPos() {
+    private Angle getClimberPos() {
         return this.climbMotor.getRotorPosition().getValue();
     }
 }

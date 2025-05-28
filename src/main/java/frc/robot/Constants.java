@@ -4,7 +4,7 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.config.PIDConstants;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;

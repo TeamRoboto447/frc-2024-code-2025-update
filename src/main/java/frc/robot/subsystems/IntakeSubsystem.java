@@ -2,13 +2,13 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkLimitSwitch;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-import com.revrobotics.SparkLimitSwitch.Type;
+import com.revrobotics.spark.SparkLimitSwitch;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkLowLevel.PeriodicFrame;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.LimitSwitchConfig.Type;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import frc.robot.Constants.IntakeConstants;
 
@@ -21,17 +21,17 @@ public class IntakeSubsystem extends SubsystemBase {
         STALLED_AT_BOTTOM
     }
 
-    private final CANSparkMax left;
-    private final CANSparkMax front;
-    private final CANSparkMax right;
-    private final CANSparkMax loader;
+    private final SparkMax left;
+    private final SparkMax front;
+    private final SparkMax right;
+    private final SparkMax loader;
 
-    private final CANSparkMax lifterLeft;
+    private final SparkMax lifterLeft;
     private final RelativeEncoder liftEncoderLeft;
-    private final CANSparkMax lifterMid;
+    private final SparkMax lifterMid;
     private final SparkLimitSwitch upLimitMid;
     private final RelativeEncoder liftEncoderMid;
-    private final CANSparkMax lifterRight;
+    private final SparkMax lifterRight;
     private final RelativeEncoder liftEncoderRight;
 
     private IntakeStatus requestedLiftStatus = IntakeStatus.RAISED;
@@ -42,39 +42,39 @@ public class IntakeSubsystem extends SubsystemBase {
     private boolean zerodMotors = false;
 
     public IntakeSubsystem(SwerveSubsystem driveSystem) {
-        this.left = new CANSparkMax(IntakeConstants.leftMotorId, MotorType.kBrushless);
+        this.left = new SparkMax(IntakeConstants.leftMotorId, MotorType.kBrushless);
         this.left.setInverted(false);
         this.setPeriods(this.left);
 
-        this.front = new CANSparkMax(IntakeConstants.frontMotorId, MotorType.kBrushless);
+        this.front = new SparkMax(IntakeConstants.frontMotorId, MotorType.kBrushless);
         this.front.setInverted(false);
         this.setPeriods(this.front);
 
-        this.right = new CANSparkMax(IntakeConstants.rightMotorId, MotorType.kBrushless);
+        this.right = new SparkMax(IntakeConstants.rightMotorId, MotorType.kBrushless);
         this.right.setInverted(true);
         this.setPeriods(this.right);
 
-        this.loader = new CANSparkMax(IntakeConstants.loaderMotorId, MotorType.kBrushless);
+        this.loader = new SparkMax(IntakeConstants.loaderMotorId, MotorType.kBrushless);
 
-        this.lifterMid = new CANSparkMax(IntakeConstants.lifterTwo, MotorType.kBrushless);
+        this.lifterMid = new SparkMax(IntakeConstants.lifterTwo, MotorType.kBrushless);
         this.lifterMid.setInverted(false);
         this.lifterMid.setIdleMode(IdleMode.kBrake);
         this.lifterMid.setSmartCurrentLimit(20);
         this.setPeriods(this.lifterMid);
 
-        this.lifterLeft = new CANSparkMax(IntakeConstants.lifterOne, MotorType.kBrushless);
+        this.lifterLeft = new SparkMax(IntakeConstants.lifterOne, MotorType.kBrushless);
         this.lifterLeft.setInverted(false);
         this.lifterLeft.setIdleMode(IdleMode.kBrake);
         this.lifterLeft.setSmartCurrentLimit(20);
         this.setPeriods(this.lifterLeft);
 
-        this.lifterRight = new CANSparkMax(IntakeConstants.lifterThree, MotorType.kBrushless);
+        this.lifterRight = new SparkMax(IntakeConstants.lifterThree, MotorType.kBrushless);
         this.lifterRight.setInverted(false);
         this.lifterRight.follow(this.lifterMid);
         this.lifterRight.setSmartCurrentLimit(20);
         this.setPeriods(this.lifterRight);
 
-        this.upLimitMid = lifterMid.getForwardLimitSwitch(Type.kNormallyOpen);
+        this.upLimitMid = lifterMid.getForwardLimitSwitch();
 
         this.liftEncoderLeft = lifterLeft.getEncoder();
         this.liftEncoderMid = lifterMid.getEncoder();
@@ -82,7 +82,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     }
 
-    private void setPeriods(CANSparkMax sparkMax) {
+    private void setPeriods(SparkMax sparkMax) {
         sparkMax.setCANTimeout(500);
         sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 200);
         sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
@@ -132,8 +132,9 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void manualIntake(double speed) {
-    //    if (getState() != IntakeStatus.LOWERED && getState() != IntakeStatus.STALLED_AT_BOTTOM)
-    //      speed = Math.min(speed, 0);
+        // if (getState() != IntakeStatus.LOWERED && getState() !=
+        // IntakeStatus.STALLED_AT_BOTTOM)
+        // speed = Math.min(speed, 0);
         this.left.set(speed);
         this.front.set(speed);
         this.right.set(speed);
