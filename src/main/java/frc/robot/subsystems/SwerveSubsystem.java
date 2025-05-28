@@ -19,7 +19,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
@@ -104,7 +104,7 @@ public class SwerveSubsystem extends SubsystemBase {
         );
     }
 
-    public Measure<Distance> distanceToTarget(Translation2d target) {
+    public Distance distanceToTarget(Translation2d target) {
         Translation2d robotPos = this.swerveDrive.getPose().getTranslation();
         double measured = robotPos.getDistance(target);
         return edu.wpi.first.units.Units.Meters.of(measured);
