@@ -5,9 +5,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkLowLevel.PeriodicFrame;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.LimitSwitchConfig.Type;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import frc.robot.Constants.IntakeConstants;
@@ -43,35 +44,47 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public IntakeSubsystem(SwerveSubsystem driveSystem) {
         this.left = new SparkMax(IntakeConstants.leftMotorId, MotorType.kBrushless);
-        this.left.setInverted(false);
+        SparkMaxConfig leftConfig = new SparkMaxConfig();
+        leftConfig.inverted(false);
+        this.left.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.setPeriods(this.left);
 
         this.front = new SparkMax(IntakeConstants.frontMotorId, MotorType.kBrushless);
-        this.front.setInverted(false);
+        SparkMaxConfig frontConfig = new SparkMaxConfig();
+        frontConfig.inverted(false);
+        this.front.configure(frontConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.setPeriods(this.front);
 
         this.right = new SparkMax(IntakeConstants.rightMotorId, MotorType.kBrushless);
-        this.right.setInverted(true);
+        SparkMaxConfig rightConfig = new SparkMaxConfig();
+        rightConfig.inverted(true);
+        this.right.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.setPeriods(this.right);
 
         this.loader = new SparkMax(IntakeConstants.loaderMotorId, MotorType.kBrushless);
 
         this.lifterMid = new SparkMax(IntakeConstants.lifterTwo, MotorType.kBrushless);
-        this.lifterMid.setInverted(false);
-        this.lifterMid.setIdleMode(IdleMode.kBrake);
-        this.lifterMid.setSmartCurrentLimit(20);
+        SparkMaxConfig lifterMidConfig = new SparkMaxConfig();
+        lifterMidConfig.inverted(false);
+        lifterMidConfig.idleMode(IdleMode.kBrake);
+        lifterMidConfig.smartCurrentLimit(20);
+        this.lifterMid.configure(lifterMidConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.setPeriods(this.lifterMid);
 
         this.lifterLeft = new SparkMax(IntakeConstants.lifterOne, MotorType.kBrushless);
-        this.lifterLeft.setInverted(false);
-        this.lifterLeft.setIdleMode(IdleMode.kBrake);
-        this.lifterLeft.setSmartCurrentLimit(20);
+        SparkMaxConfig lifterLeftConfig = new SparkMaxConfig();
+        lifterLeftConfig.inverted(false);
+        lifterLeftConfig.idleMode(IdleMode.kBrake);
+        lifterLeftConfig.smartCurrentLimit(20);
+        this.lifterLeft.configure(lifterLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.setPeriods(this.lifterLeft);
 
         this.lifterRight = new SparkMax(IntakeConstants.lifterThree, MotorType.kBrushless);
-        this.lifterRight.setInverted(false);
-        this.lifterRight.follow(this.lifterMid);
-        this.lifterRight.setSmartCurrentLimit(20);
+        SparkMaxConfig lifterRightConfig = new SparkMaxConfig();
+        lifterRightConfig.inverted(false);
+        lifterRightConfig.follow(this.lifterMid);
+        lifterRightConfig.smartCurrentLimit(20);
+        this.lifterRight.configure(lifterRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.setPeriods(this.lifterRight);
 
         this.upLimitMid = lifterMid.getForwardLimitSwitch();
@@ -84,13 +97,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
     private void setPeriods(SparkMax sparkMax) {
         sparkMax.setCANTimeout(500);
-        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 200);
-        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
-        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
-        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 500);
-        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 500);
-        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 200);
-        sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 200);
+        // sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 200);
+        // sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+        // sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
+        // sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 500);
+        // sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 500);
+        // sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 200);
+        // sparkMax.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 200);
     }
 
     public boolean atUpperLimit() {

@@ -4,10 +4,12 @@ import java.io.File;
 import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -72,36 +74,67 @@ public class SwerveSubsystem extends SubsystemBase {
      * Setup AutoBuilder for PathPlanner.
      */
     public void setupPathPlanner() {
-        AutoBuilder.configureHolonomic(
-                this::getPose, // Robot pose supplier
-                this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
-                this::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                this::setChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-                new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your
-                                                 // Constants class
-                        new PIDConstants(6, 0.0, 0.25),
-                        // Translation PID constants
-                        new PIDConstants(swerveDrive.swerveController.config.headingPIDF.p,
-                                swerveDrive.swerveController.config.headingPIDF.i,
-                                swerveDrive.swerveController.config.headingPIDF.d),
-                        // Rotation PID constants
-                        4.5,
-                        // Max module speed, in m/s
-                        swerveDrive.swerveDriveConfiguration.getDriveBaseRadiusMeters(),
-                        // Drive base radius in meters. Distance from robot center to furthest module.
-                        new ReplanningConfig()
-                // Default path replanning config. See the API for the options here
-                ),
-                () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the red
-                    // alliance
-                    // This will flip the path being followed to the red side of the field.
-                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-                    var alliance = DriverStation.getAlliance();
-                    return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
-                },
-                this // Reference to this subsystem to set requirements
-        );
+        // Load the RobotConfig from the GUI settings. You should probably
+        // store this in your Constants file
+        RobotConfig config;
+        try {
+            config = RobotConfig.fromGUISettings();
+
+            final boolean enableFeedforward = true;
+            // Configure AutoBuilder last
+            AutoBuilder.configure(
+                    this::getPose,
+                    // Robot pose supplier
+                    this::resetOdometry,
+                    // Method to reset odometry (will be called if your auto has a starting pose)
+                    this::getRobotVelocity,
+                    // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                    (speedsRobotRelative, moduleFeedForwards) -> {
+                        if (enableFeedforward) {
+                            swerveDrive.drive(
+                                    speedsRobotRelative,
+                                    swerveDrive.kinematics.toSwerveModuleStates(speedsRobotRelative),
+                                    moduleFeedForwards.linearForces());
+                        } else {
+                            swerveDrive.setChassisSpeeds(speedsRobotRelative);
+                        }
+                    },
+                    // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also
+                    // optionally outputs individual module feedforwards
+                    new PPHolonomicDriveController(
+                            // PPHolonomicController is the built in path following controller for holonomic
+                            // drive trains
+                            new PIDConstants(4.0, 0, 0),
+                            // Translation PID constants
+                            new PIDConstants(2.0, 0.0, 0)
+                    // Rotation PID constants
+                    ),
+                    config,
+                    // The robot configuration
+                    () -> {
+                        // Boolean supplier that controls when the path will be mirrored for the red
+                        // alliance
+                        // This will flip the path being followed to the red side of the field.
+                        // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+                        var alliance = DriverStation.getAlliance();
+                        if (alliance.isPresent()) {
+                            return alliance.get() == DriverStation.Alliance.Red;
+                        }
+                        return false;
+                    },
+                    this
+            // Reference to this subsystem to set requirements
+            );
+
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+        }
+
+        // Preload PathPlanner Path finding
+        // IF USING CUSTOM PATHFINDER ADD BEFORE THIS LINE
+        PathfindingCommand.warmupCommand().schedule();
     }
 
     public Distance distanceToTarget(Translation2d target) {
@@ -124,22 +157,9 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return {@link AutoBuilder#followPath(PathPlannerPath)} path command.
      */
     public Command getAutonomousCommand(String pathName, boolean setOdomToStart) {
-        // Load the path you want to follow using its name in the GUI
-        PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
-        Optional<Alliance> optional = DriverStation.getAlliance();
-        if (optional.isPresent()) {
-            Alliance alliance = optional.get();
-            if (alliance == Alliance.Red)
-                path.flipPath();
-        }
-
-        if (setOdomToStart) {
-            resetOdometry(new Pose2d(path.getPoint(0).position, getHeading()));
-        }
-
         // Create a path following command using AutoBuilder. This will also trigger
         // event markers.
-        return AutoBuilder.followPath(path);
+        return new PathPlannerAuto(pathName);
     }
 
     // /**
@@ -218,6 +238,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private NetworkTableInstance table;
     private NetworkTableEntry distFromTarget;
     private NetworkTableEntry withinRange;
+
     private void ntInit() {
         table = NetworkTableInstance.getDefault();
         pidTuningPVs = table.getTable("pidTuningPVs");
@@ -237,20 +258,20 @@ public class SwerveSubsystem extends SubsystemBase {
         withinRange.setBoolean(distance < 2.75);
         boolean reset = false;
         // if (this.dJoystick.getRawButton(7))
-        //     reset = true;
-        //     System.out.println("Joystick button 7 pressed");
+        // reset = true;
+        // System.out.println("Joystick button 7 pressed");
         // if (this.dJoystick.getRawButton(8))
-        //     reset = true;
-        //     System.out.println("Joystick button 8 pressed");
+        // reset = true;
+        // System.out.println("Joystick button 8 pressed");
         // if (this.dJoystick.getRawButton(9))
-        //     reset = true;
-        //     System.out.println("Joystick button 9 pressed");
+        // reset = true;
+        // System.out.println("Joystick button 9 pressed");
         // if (this.dJoystick.getRawButton(10))
-        //     reset = true;
-        //     System.out.println("Joystick button 10 pressed");
+        // reset = true;
+        // System.out.println("Joystick button 10 pressed");
         // if (this.dJoystick.getRawButton(11))
-        //     reset = true;
-        //     System.out.println("Joystick button 11 pressed");
+        // reset = true;
+        // System.out.println("Joystick button 11 pressed");
         if (this.dJoystick.getRawButton(12)) {
             reset = true;
             System.out.println("Joystick button 12 pressed");

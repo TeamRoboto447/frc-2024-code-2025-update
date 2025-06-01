@@ -126,13 +126,13 @@ public final class Constants {
          * matrix is in the form [x, y, theta]ᵀ, with units in meters and radians, then
          * meters.
          */
-        public static final Matrix<N3, N1> VISION_MEASUREMENT_STANDARD_DEVIATIONS = Matrix.mat(Nat.N3(), Nat.N1())
-                .fill(
-                        // if these numbers are less than one, multiplying will do bad things
-                        1, // x
-                        1, // y
-                        1 * Math.PI // theta
-                );
+        public static final Matrix<N3, N1> VISION_MEASUREMENT_STANDARD_DEVIATIONS = new Matrix<>(Nat.N3(), Nat.N1());
+        // .fill(
+        // // if these numbers are less than one, multiplying will do bad things
+        // 1, // x
+        // 1, // y
+        // 1 * Math.PI // theta
+        // );
 
         /**
          * Standard deviations of the vision measurements. Increase these numbers to
@@ -140,11 +140,12 @@ public final class Constants {
          * less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and
          * radians.
          */
-        public static final Matrix<N3, N1> STATE_STANDARD_DEVIATIONS = Matrix.mat(Nat.N3(), Nat.N1())
-                .fill(
-                        // if these numbers are less than one, multiplying will do bad things
-                        .1, // x
-                        .1, // y
-                        .1);
+        // public static final Matrix<N3, N1> STATE_STANDARD_DEVIATIONS =
+        // Matrix.mat(Nat.N3(), Nat.N1())
+        // .fill(
+        // // if these numbers are less than one, multiplying will do bad things
+        // .1, // x
+        // .1, // y
+        // .1);
     }
 }
